@@ -9,12 +9,12 @@
 # Redirect rules for each project to handle SPA routing
 [[redirects]]
   from = "/read-rank/*"
-  to = "/read-rank/index.html"
+  to = "/read-rank/dist/index.html"
   status = 200
 
 [[redirects]]
   from = "/treasury-tracker/*"
-  to = "/treasury-tracker/index.html"
+  to = "/treasury-tracker/dist/index.html"
   status = 200
 
 # Set correct MIME types for JavaScript files
