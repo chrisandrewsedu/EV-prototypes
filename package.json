@@ -1,0 +1,10 @@
+{
+  "name": "ev-prototypes",
+  "version": "1.0.0",
+  "description": "Feature prototypes collection",
+  "scripts": {
+    "build:all": "npm run build:read-rank && npm run build:treasury",
+    "build:read-rank": "cd read-rank && npm install && npm run build",
+    "build:treasury": "cd treasury-tracker && npm install && npm run build"
+  }
+}

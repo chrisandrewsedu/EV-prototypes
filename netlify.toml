@@ -1,0 +1,24 @@
+# Main build configuration
+[build]
+  # Publish the root directory which contains index.html and subdirectories
+  publish = "."
+  
+  # Build script that will build both projects
+  command = "npm run build:all"
+
+# Redirect rules for each project to handle SPA routing
+[[redirects]]
+  from = "/read-rank/*"
+  to = "/read-rank/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/treasury-tracker/*"
+  to = "/treasury-tracker/index.html"
+  status = 200
+
+# Set correct MIME types for JavaScript files
+[[headers]]
+  for = "/**/*.js"
+  [headers.values]
+    Content-Type = "application/javascript; charset=utf-8"
