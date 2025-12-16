@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feature Prototypes</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Manrope', sans-serif;
+            background: linear-gradient(135deg, #00657c 0%, #59b0c4 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #ffffff;
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .feature-card {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 2.5rem;
+            text-decoration: none;
+            color: #1c1c1c;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: #ff5740;
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .feature-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .feature-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: #1c1c1c;
+        }
+
+        .feature-description {
+            color: #00657c;
+            line-height: 1.6;
+            font-size: 0.95rem;
+            font-weight: 400;
+        }
+
+        .feature-arrow {
+            display: inline-block;
+            margin-left: 0.5rem;
+            transition: transform 0.3s ease;
+            color: #ff5740;
+        }
+
+        .feature-card:hover .feature-arrow {
+            transform: translateX(5px);
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+                margin-bottom: 2rem;
+            }
+
+            .feature-card {
+                padding: 2rem;
+            }
+
+            .features-grid {
+                gap: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Feature Prototypes</h1>
+        
+        <div class="features-grid">
+            <a href="read-rank/" class="feature-card">
+                <div class="feature-title">
+                    Read & Rank
+                    <span class="feature-arrow">→</span>
+                </div>
+                <p class="feature-description">
+                    Interactive reading and ranking tool
+                </p>
+            </a>
+
+            <a href="treasury-tracker/" class="feature-card">
+                <div class="feature-title">
+                Treasury Tracker
+                <span class="feature-arrow">→</span>
+                </div>
+                <p class="feature-description">
+                    Track and manage treasury data
+                </p>
+           </a>
+        </div>
+    </div>
+</body>
+</html>
