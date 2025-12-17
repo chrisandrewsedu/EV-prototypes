@@ -1,6 +1,6 @@
 {
   "cityName": "Bloomington",
-  "population": 85000,
+  "population": 80000,
   "fiscalYears": [2021, 2022, 2023, 2024, 2025],
   "inputFile": "data/operating-budget.csv",
   "outputFile": "public/data/budget-{year}.json",

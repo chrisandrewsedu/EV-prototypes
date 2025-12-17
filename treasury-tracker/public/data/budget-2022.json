@@ -2,9 +2,9 @@
   "metadata": {
     "cityName": "Bloomington",
     "fiscalYear": 2022,
-    "population": 85000,
+    "population": 80000,
     "totalBudget": 159441883.21,
-    "generatedAt": "2025-12-16T02:17:47.845Z",
+    "generatedAt": "2025-12-16T15:30:09.228Z",
     "hierarchy": [
       "primary_function",
       "priority",

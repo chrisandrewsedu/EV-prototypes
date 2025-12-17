@@ -15,6 +15,15 @@ interface PathItem {
   parent?: BudgetCategory;
 }
 
+interface SelectedCategoryInfo {
+  category: BudgetCategory;
+  depth: number;
+}
+
+interface SelectionPath {
+  [depth: number]: BudgetCategory;
+}
+
 function App() {
   const [activeTab, setActiveTab] = useState('city');
   const [selectedYear, setSelectedYear] = useState('2025');
@@ -23,6 +32,7 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [path, setPath] = useState<PathItem[]>([]);
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
+  const [selectionPath, setSelectionPath] = useState<SelectionPath>({});
 
   // Load budget data on mount and when year changes
   useEffect(() => {
@@ -53,13 +63,36 @@ function App() {
     const categoryKey = `${categoryDepth}-${category.name}`;
     
     if (expandedCategories.has(categoryKey)) {
-      // Collapse this category
+      // Collapse this category - remove this depth and all deeper from selection path
       setExpandedCategories(prev => {
         const next = new Set(prev);
         next.delete(categoryKey);
         return next;
       });
+      setSelectionPath(prev => {
+        const next = { ...prev };
+        // Remove this depth and all deeper levels
+        Object.keys(next).forEach(key => {
+          if (parseInt(key) >= categoryDepth) {
+            delete next[parseInt(key)];
+          }
+        });
+        return next;
+      });
     } else {
+      // Expanding - add to selection path
+      setSelectionPath(prev => {
+        const next = { ...prev };
+        next[categoryDepth] = category;
+        // Remove any deeper levels when selecting at this level
+        Object.keys(next).forEach(key => {
+          if (parseInt(key) > categoryDepth) {
+            delete next[parseInt(key)];
+          }
+        });
+        return next;
+      });
+      
       // When expanding a new category at the top level (depth 1), clear all others
       if (categoryDepth === 1) {
         setExpandedCategories(new Set([categoryKey]));
@@ -74,6 +107,7 @@ function App() {
     if (index < path.length - 1) {
       setPath(path.slice(0, index + 1));
       setExpandedCategories(new Set());
+      setSelectionPath({});
     }
   }, [path]);
 
@@ -86,13 +120,23 @@ function App() {
     }).format(amount);
   }, []);
 
-  const breadcrumbItems = useMemo(
-    () => path.map((item, index) => ({
-      label: item.label,
-      onClick: index < path.length - 1 ? () => handleBreadcrumbClick(index) : undefined
-    })),
-    [path, handleBreadcrumbClick]
-  );
+  const breadcrumbItems = useMemo(() => {
+    const items = [{ label: 'City', onClick: path.length > 1 ? () => handleBreadcrumbClick(0) : undefined }];
+    
+    // Add selected categories to breadcrumb
+    Object.keys(selectionPath)
+      .sort((a, b) => parseInt(a) - parseInt(b))
+      .forEach(depthStr => {
+        const depth = parseInt(depthStr);
+        const category = selectionPath[depth];
+        items.push({
+          label: category.name,
+          onClick: undefined // Current selection, not clickable
+        });
+      });
+    
+    return items;
+  }, [selectionPath, path, handleBreadcrumbClick]);
 
   const formatPerResident = (total: number) => {
     if (!budgetData) return '$0';
@@ -158,8 +202,11 @@ function App() {
                 handleCategoryClick(subcat, currentDepth + 1);
               }
             }}
-            onCollapse={() => handleCategoryClick(category, currentDepth)}
+            onCollapse={() => {
+              handleCategoryClick(category, currentDepth);
+            }}
             depth={currentDepth}
+            selectionPath={selectionPath}
           />
           {/* Recursively render nested expanded subcategories */}
           {category.subcategories && renderCategoryDetails(category.subcategories, currentDepth + 1)}
@@ -191,14 +238,21 @@ function App() {
         </div>
       </div>
 
-      {path.length > 1 && <Breadcrumb items={breadcrumbItems} />}
+      {breadcrumbItems.length > 1 && <Breadcrumb items={breadcrumbItems} />}
 
       <div className="main-content">
         {/* Hero Section - Only show at top level */}
         {path.length === 1 && (
-          <>
-            <div className="hero-section">
-              <div className="hero-overlay"></div>
+          <div className="hero-and-cards-row">
+            <div className="hero-section" style={{
+              backgroundImage: "url('https://upload.wikimedia.org/wikipedia/commons/8/85/Monroe_County_Courthouse_in_Bloomington_from_west-southwest.jpg')",
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat'
+            }}>
+              <div className="hero-overlay" style={{
+                background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.3) 100%)'
+              }}></div>
               <div className="hero-content">
                 <h1>{budgetData.metadata.cityName} City Budget</h1>
                 <p>Explore how public funds are allocated and spent.</p>
@@ -207,19 +261,22 @@ function App() {
 
             <div className="info-cards">
               <div className="info-card">
-                <h3>Total {budgetData.metadata.fiscalYear} Budget</h3>
-                <div className="amount">{formatCurrency(totalBudget)}</div>
-              </div>
-              <div className="info-card">
-                <h3>City Context</h3>
-                <div className="description">
-                  Serving approximately {budgetData.metadata.population.toLocaleString()} residents
-                  <br />
-                  {formatPerResident(totalBudget)} per resident annually
+                <div className="info-card-left">
+                  <h3>Total {budgetData.metadata.fiscalYear} Budget</h3>
+                  <div className="amount">{formatCurrency(totalBudget)}</div>
+                </div>
+                <div className="info-card-divider"></div>
+                <div className="info-card-right">
+                  <h3>City Context</h3>
+                  <div className="description">
+                    Population ~{budgetData.metadata.population.toLocaleString()} residents
+                    <br />
+                    ${formatPerResident(totalBudget)} per resident annually
+                  </div>
                 </div>
               </div>
             </div>
-          </>
+          </div>
         )}
 
         {/* Search Results Message */}
@@ -260,6 +317,8 @@ function App() {
               <BudgetBar 
                 categories={displayCategories}
                 onCategoryClick={handleCategoryClick}
+                selectionPath={selectionPath}
+                currentDepth={path.length}
               />
 
               {/* Render expanded category details recursively */}

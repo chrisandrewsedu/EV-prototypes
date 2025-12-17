@@ -4,9 +4,11 @@ import type { BudgetCategory } from '../types/budget';
 interface BudgetBarProps {
   categories: BudgetCategory[];
   onCategoryClick: (category: BudgetCategory) => void;
+  selectionPath: { [depth: number]: BudgetCategory };
+  currentDepth: number;
 }
 
-const BudgetBar: React.FC<BudgetBarProps> = ({ categories, onCategoryClick }) => {
+const BudgetBar: React.FC<BudgetBarProps> = ({ categories, onCategoryClick, selectionPath, currentDepth }) => {
   const [hoveredCategory, setHoveredCategory] = useState<BudgetCategory | null>(null);
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
 
@@ -45,30 +47,40 @@ const BudgetBar: React.FC<BudgetBarProps> = ({ categories, onCategoryClick }) =>
         role="group"
         aria-label="Budget allocation by department"
       >
-        {categories.map((category, index) => (
-          <div
-            key={`${category.name}-${index}`}
-            className="budget-segment"
-            style={{
-              width: `${category.percentage}%`,
-              backgroundColor: category.color,
-            }}
-            onClick={() => onCategoryClick(category)}
-            onMouseEnter={() => setHoveredCategory(category)}
-            onMouseLeave={() => setHoveredCategory(null)}
-            onKeyDown={(e) => handleKeyDown(e, category)}
-            tabIndex={0}
-            role="button"
-            aria-label={`${category.name}: ${formatCurrency(category.amount)}, ${formatPercentage(category.percentage)}% of budget. Click to expand.`}
-          >
-            {category.percentage >= 8 && (
-              <div className="segment-label" aria-hidden="true">
-                <div className="segment-name">{category.name}</div>
-                <div className="segment-percentage">{formatPercentage(category.percentage)}%</div>
-              </div>
-            )}
-          </div>
-        ))}
+        {categories.map((category, index) => {
+          const isSelected = selectionPath[currentDepth]?.name === category.name;
+          return (
+            <div
+              key={`${category.name}-${index}`}
+              className={`budget-segment ${isSelected ? 'selected' : ''}`}
+              style={{
+                width: `${category.percentage}%`,
+                backgroundColor: category.color,
+              }}
+              onClick={() => onCategoryClick(category)}
+              onMouseEnter={() => setHoveredCategory(category)}
+              onMouseLeave={() => setHoveredCategory(null)}
+              onKeyDown={(e) => handleKeyDown(e, category)}
+              tabIndex={0}
+              role="button"
+              aria-label={`${category.name}: ${formatCurrency(category.amount)}, ${formatPercentage(category.percentage)}% of budget. ${isSelected ? 'Currently selected. ' : ''}Click to expand.`}
+            >
+              {isSelected && (
+                <div className="selection-badge" aria-hidden="true">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M13.5 4L6 11.5L2.5 8" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+              )}
+              {category.percentage >= 8 && (
+                <div className="segment-label" aria-hidden="true">
+                  <div className="segment-name">{category.name}</div>
+                  <div className="segment-percentage">{formatPercentage(category.percentage)}%</div>
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
       
       {hoveredCategory && (

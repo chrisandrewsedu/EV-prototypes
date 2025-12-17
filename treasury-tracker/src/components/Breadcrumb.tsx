@@ -33,10 +33,22 @@ const Breadcrumb: React.FC<BreadcrumbProps> = ({ items }) => {
                 </button>
               ) : (
                 <span
-                  className={`breadcrumb-item ${index === items.length - 1 ? 'active' : ''}`}
+                  className={`breadcrumb-item ${index === items.length - 1 ? 'active selected-breadcrumb' : ''}`}
                   aria-current={index === items.length - 1 ? 'page' : undefined}
                 >
                   {item.label}
+                  {index === items.length - 1 && (
+                    <svg 
+                      width="14" 
+                      height="14" 
+                      viewBox="0 0 16 16" 
+                      fill="none"
+                      style={{ marginLeft: '0.5rem', verticalAlign: 'middle' }}
+                      aria-hidden="true"
+                    >
+                      <path d="M13.5 4L6 11.5L2.5 8" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  )}
                 </span>
               )}
             </li>

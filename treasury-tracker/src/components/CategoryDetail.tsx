@@ -7,6 +7,7 @@ interface CategoryDetailProps {
   onSubcategoryClick: (subcategory: BudgetCategory) => void;
   onCollapse: () => void;
   depth: number;
+  selectionPath: { [depth: number]: BudgetCategory };
 }
 
 const CategoryDetail: React.FC<CategoryDetailProps> = ({
@@ -14,6 +15,7 @@ const CategoryDetail: React.FC<CategoryDetailProps> = ({
   onSubcategoryClick,
   onCollapse,
   depth,
+  selectionPath,
 }) => {
   const formatCurrency = (amount: number) => {
     if (amount >= 1000000) {
@@ -134,6 +136,8 @@ const CategoryDetail: React.FC<CategoryDetailProps> = ({
           <BudgetBar 
             categories={category.subcategories!} 
             onCategoryClick={onSubcategoryClick}
+            selectionPath={selectionPath}
+            currentDepth={depth + 1}
           />
 
           {/* Legend */}
