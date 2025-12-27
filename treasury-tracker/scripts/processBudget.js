@@ -121,6 +121,7 @@ class BudgetProcessor {
    */
   treeToArray(tree, depth) {
     const result = [];
+    const isLowestLevel = depth === this.config.hierarchy.length - 1;
     
     for (const [name, node] of Object.entries(tree)) {
       const amount = this.calculateTotal(node.items);
@@ -149,6 +150,15 @@ class BudgetProcessor {
           const uniqueDescriptions = [...new Set(descriptions)];
           category.description = uniqueDescriptions.slice(0, 3).join('; ');
         }
+      }
+      
+      // At the lowest level, include detailed line items
+      if (isLowestLevel && node.items.length > 0) {
+        category.lineItems = node.items.map(item => ({
+          description: item.description || 'No description',
+          approvedAmount: parseFloat(item.approved_amount) || 0,
+          actualAmount: parseFloat(item.actual_amount) || 0
+        }));
       }
       
       // Recursively process children

@@ -2,6 +2,12 @@
  * Budget Data Types
  */
 
+export interface LineItem {
+  description: string;
+  approvedAmount: number;
+  actualAmount: number;
+}
+
 export interface BudgetCategory {
   name: string;
   amount: number;
@@ -12,6 +18,7 @@ export interface BudgetCategory {
   whyMatters?: string;
   historicalChange?: number;
   items?: number; // Number of line items aggregated into this category
+  lineItems?: LineItem[]; // Detailed line items at the lowest level
 }
 
 export interface BudgetData {

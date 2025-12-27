@@ -1,22 +1,19 @@
-import React, { useState, useMemo, useCallback, useEffect } from 'react'
+import { useState, useMemo, useCallback, useEffect } from 'react'
+import { ArrowLeft } from 'lucide-react';
 import NavigationTabs from './components/NavigationTabs';
 import SearchBar from './components/SearchBar';
 import YearSelector from './components/YearSelector';
 import Breadcrumb from './components/Breadcrumb';
 import BudgetBar from './components/BudgetBar';
-import CategoryDetail from './components/CategoryDetail';
+import CategoryList from './components/CategoryList';
+import LineItemsTable from './components/LineItemsTable';
 import type { BudgetCategory, BudgetData } from './types/budget';
 import { loadBudgetData } from './data/dataLoader';
 import './App.css'
 
-interface PathItem {
+interface BreadcrumbItem {
   label: string;
-  categories: BudgetCategory[];
-  parent?: BudgetCategory;
-}
-
-interface SelectionPath {
-  [depth: number]: BudgetCategory;
+  onClick?: () => void;
 }
 
 function App() {
@@ -25,9 +22,7 @@ function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [budgetData, setBudgetData] = useState<BudgetData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [path, setPath] = useState<PathItem[]>([]);
-  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
-  const [selectionPath, setSelectionPath] = useState<SelectionPath>({});
+  const [navigationPath, setNavigationPath] = useState<BudgetCategory[]>([]);
 
   // Load budget data on mount and when year changes
   useEffect(() => {
@@ -35,8 +30,7 @@ function App() {
     loadBudgetData(parseInt(selectedYear))
       .then(data => {
         setBudgetData(data);
-        setPath([{ label: 'City', categories: data.categories }]);
-        setExpandedCategories(new Set()); // Clear expanded categories when changing years
+        setNavigationPath([]); // Reset navigation when changing years
         setLoading(false);
       })
       .catch(error => {
@@ -53,58 +47,24 @@ function App() {
 
   const years = ['2025', '2024', '2023', '2022', '2021'];
 
-  const handleCategoryClick = useCallback((category: BudgetCategory, depth?: number) => {
-    const categoryDepth = depth ?? path.length;
-    const categoryKey = `${categoryDepth}-${category.name}`;
-    
-    if (expandedCategories.has(categoryKey)) {
-      // Collapse this category - remove this depth and all deeper from selection path
-      setExpandedCategories(prev => {
-        const next = new Set(prev);
-        next.delete(categoryKey);
-        return next;
-      });
-      setSelectionPath(prev => {
-        const next = { ...prev };
-        // Remove this depth and all deeper levels
-        Object.keys(next).forEach(key => {
-          if (parseInt(key) >= categoryDepth) {
-            delete next[parseInt(key)];
-          }
-        });
-        return next;
-      });
-    } else {
-      // Expanding - add to selection path
-      setSelectionPath(prev => {
-        const next = { ...prev };
-        next[categoryDepth] = category;
-        // Remove any deeper levels when selecting at this level
-        Object.keys(next).forEach(key => {
-          if (parseInt(key) > categoryDepth) {
-            delete next[parseInt(key)];
-          }
-        });
-        return next;
-      });
-      
-      // When expanding a new category at the top level (depth 1), clear all others
-      if (categoryDepth === 1) {
-        setExpandedCategories(new Set([categoryKey]));
-      } else {
-        // For deeper levels, just add to expanded
-        setExpandedCategories(prev => new Set(prev).add(categoryKey));
-      }
+  const handleCategoryClick = useCallback((category: BudgetCategory) => {
+    // Navigate into category if it has subcategories OR if it has line items (lowest level)
+    if (category.subcategories && category.subcategories.length > 0) {
+      setNavigationPath([...navigationPath, category]);
+    } else if (category.lineItems && category.lineItems.length > 0) {
+      // Navigate to show the line items for this category
+      setNavigationPath([...navigationPath, category]);
     }
-  }, [path.length, expandedCategories]);
+  }, [navigationPath]);
+
+  const handleBack = useCallback(() => {
+    setNavigationPath(navigationPath.slice(0, -1));
+  }, [navigationPath]);
 
   const handleBreadcrumbClick = useCallback((index: number) => {
-    if (index < path.length - 1) {
-      setPath(path.slice(0, index + 1));
-      setExpandedCategories(new Set());
-      setSelectionPath({});
-    }
-  }, [path]);
+    // index 0 = back to overview
+    setNavigationPath(navigationPath.slice(0, index));
+  }, [navigationPath]);
 
   const formatCurrency = useCallback((amount: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -115,23 +75,25 @@ function App() {
     }).format(amount);
   }, []);
 
-  const breadcrumbItems = useMemo(() => {
-    const items = [{ label: 'City', onClick: path.length > 1 ? () => handleBreadcrumbClick(0) : undefined }];
+  const breadcrumbItems: BreadcrumbItem[] = useMemo(() => {
+    const items: BreadcrumbItem[] = [
+      { 
+        label: 'City', 
+        onClick: navigationPath.length > 0 ? () => handleBreadcrumbClick(0) : undefined 
+      }
+    ];
     
-    // Add selected categories to breadcrumb
-    Object.keys(selectionPath)
-      .sort((a, b) => parseInt(a) - parseInt(b))
-      .forEach(depthStr => {
-        const depth = parseInt(depthStr);
-        const category = selectionPath[depth];
-        items.push({
-          label: category.name,
-          onClick: undefined // Current selection, not clickable
-        });
+    navigationPath.forEach((category, index) => {
+      items.push({
+        label: category.name,
+        onClick: index < navigationPath.length - 1 
+          ? () => handleBreadcrumbClick(index + 1)
+          : undefined // Current selection, not clickable
       });
+    });
     
     return items;
-  }, [selectionPath, path, handleBreadcrumbClick]);
+  }, [navigationPath, handleBreadcrumbClick]);
 
   const formatPerResident = (total: number) => {
     if (!budgetData) return '$0';
@@ -151,7 +113,7 @@ function App() {
   }
 
   // Show error state
-  if (!budgetData || path.length === 0) {
+  if (!budgetData) {
     return (
       <div className="app">
         <div className="main-content" style={{ padding: '4rem', textAlign: 'center' }}>
@@ -162,9 +124,17 @@ function App() {
     );
   }
 
-  // Now we're safe to compute derived values
-  const currentCategories = path[path.length - 1].categories;
-  const totalBudget = currentCategories.reduce((sum, cat) => sum + cat.amount, 0);
+  // Determine what to display
+  // If we're at a category with line items but no subcategories, show line items
+  const currentCategory = navigationPath.length > 0 ? navigationPath[navigationPath.length - 1] : null;
+  const showLineItems = currentCategory && 
+                        currentCategory.lineItems && 
+                        currentCategory.lineItems.length > 0 &&
+                        (!currentCategory.subcategories || currentCategory.subcategories.length === 0);
+  
+  const currentCategories = navigationPath.length === 0
+    ? budgetData.categories // Top level
+    : navigationPath[navigationPath.length - 1].subcategories || [];
 
   // Filter categories based on search query
   const filterCategories = (categories: BudgetCategory[], query: string): BudgetCategory[] => {
@@ -179,36 +149,6 @@ function App() {
 
   const filteredCategories = filterCategories(currentCategories, searchQuery);
   const displayCategories = searchQuery ? filteredCategories : currentCategories;
-
-  // Recursive function to render category details and their nested expansions
-  const renderCategoryDetails = (categories: BudgetCategory[], currentDepth: number): React.ReactNode => {
-    return categories.map((category) => {
-      const categoryKey = `${currentDepth}-${category.name}`;
-      const isExpanded = expandedCategories.has(categoryKey);
-      
-      if (!isExpanded) return null;
-
-      return (
-        <React.Fragment key={categoryKey}>
-          <CategoryDetail
-            category={category}
-            onSubcategoryClick={(subcat) => {
-              if (subcat.subcategories) {
-                handleCategoryClick(subcat, currentDepth + 1);
-              }
-            }}
-            onCollapse={() => {
-              handleCategoryClick(category, currentDepth);
-            }}
-            depth={currentDepth}
-            selectionPath={selectionPath}
-          />
-          {/* Recursively render nested expanded subcategories */}
-          {category.subcategories && renderCategoryDetails(category.subcategories, currentDepth + 1)}
-        </React.Fragment>
-      );
-    });
-  };
 
   return (
     <div className="app">
@@ -237,7 +177,7 @@ function App() {
 
       <div className="main-content">
         {/* Hero Section - Only show at top level */}
-        {path.length === 1 && (
+        {navigationPath.length === 0 && (
           <div className="hero-and-cards-row">
             <div className="hero-section" style={{
               backgroundImage: "url('https://upload.wikimedia.org/wikipedia/commons/8/85/Monroe_County_Courthouse_in_Bloomington_from_west-southwest.jpg')",
@@ -258,7 +198,7 @@ function App() {
               <div className="info-card">
                 <div className="info-card-left">
                   <h3>Total {budgetData.metadata.fiscalYear} Budget</h3>
-                  <div className="amount">{formatCurrency(totalBudget)}</div>
+                  <div className="amount">{formatCurrency(budgetData.metadata.totalBudget)}</div>
                 </div>
                 <div className="info-card-divider"></div>
                 <div className="info-card-right">
@@ -266,12 +206,48 @@ function App() {
                   <div className="description">
                     Population ~{budgetData.metadata.population.toLocaleString()} residents
                     <br />
-                    ${formatPerResident(totalBudget)} per resident annually
+                    ${formatPerResident(budgetData.metadata.totalBudget)} per resident annually
                   </div>
                 </div>
               </div>
             </div>
           </div>
+        )}
+
+        {/* Back button when navigated into categories */}
+        {navigationPath.length > 0 && (
+          <button
+            onClick={handleBack}
+            className="back-button"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              padding: '0.75rem 1rem',
+              marginBottom: '1.5rem',
+              backgroundColor: 'var(--white)',
+              border: '1px solid var(--medium-gray)',
+              borderRadius: '0.5rem',
+              fontSize: '0.9rem',
+              fontWeight: '500',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              fontFamily: 'Manrope, sans-serif',
+              color: 'var(--muted-blue)'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = 'var(--muted-blue)';
+              e.currentTarget.style.backgroundColor = 'var(--light-gray)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = 'var(--medium-gray)';
+              e.currentTarget.style.backgroundColor = 'var(--white)';
+            }}
+            aria-label="Go back"
+          >
+            <ArrowLeft size={20} />
+            Back to {navigationPath.length === 1 ? 'Overview' : navigationPath[navigationPath.length - 2].name}
+          </button>
         )}
 
         {/* Search Results Message */}
@@ -289,11 +265,11 @@ function App() {
         <div className="budget-section">
           <div className="section-header">
             <h2>
-              {path.length === 1 
+              {navigationPath.length === 0 
                 ? `How ${budgetData.metadata.cityName} spends its budget` 
-                : `${path[path.length - 1].label}`}
+                : navigationPath[navigationPath.length - 1].name}
             </h2>
-            {path.length > 1 && (
+            {navigationPath.length > 1 && (
               <YearSelector 
                 selectedYear={selectedYear}
                 years={years}
@@ -302,22 +278,29 @@ function App() {
             )}
           </div>
           <p className="section-description">
-            {path.length === 1 
-              ? 'Each segment shows the share of the total budget going to a department. Click to explore.'
-              : 'Click any category to see detailed breakdown and subcategories.'}
+            {navigationPath.length === 0 
+              ? 'Each segment shows the share of the total budget. Tap any category below to explore its breakdown.'
+              : showLineItems
+                ? 'Detailed line items showing individual expenditures and actual amounts spent.'
+                : 'The colored backgrounds show each subcategory\'s relative size. Tap to explore further or use the back button to return.'}
           </p>
           
-          {displayCategories.length > 0 ? (
+          {showLineItems ? (
+            // Show line items table at the lowest level
+            <LineItemsTable 
+              lineItems={currentCategory!.lineItems!}
+              categoryName={currentCategory!.name}
+            />
+          ) : displayCategories.length > 0 ? (
             <>
-              <BudgetBar 
+              {/* Visual budget bar (non-interactive) */}
+              <BudgetBar categories={displayCategories} />
+
+              {/* Interactive category list */}
+              <CategoryList 
                 categories={displayCategories}
                 onCategoryClick={handleCategoryClick}
-                selectionPath={selectionPath}
-                currentDepth={path.length}
               />
-
-              {/* Render expanded category details recursively */}
-              {renderCategoryDetails(displayCategories, path.length)}
             </>
           ) : (
             <div className="no-results">
@@ -325,6 +308,20 @@ function App() {
             </div>
           )}
         </div>
+
+        {/* Info tip */}
+        {navigationPath.length === 0 && (
+          <div style={{
+            marginTop: '1.5rem',
+            padding: '1rem',
+            backgroundColor: 'rgba(59, 130, 246, 0.08)',
+            borderRadius: '0.5rem',
+            fontSize: '0.875rem',
+            color: 'var(--text-gray)'
+          }}>
+            <strong>💡 Tip:</strong> Tap any category to drill down into its budget breakdown. Use breadcrumbs or the back button to navigate back.
+          </div>
+        )}
       </div>
     </div>
   )

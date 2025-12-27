@@ -4,18 +4,14 @@ import BudgetBar from './BudgetBar';
 
 interface CategoryDetailProps {
   category: BudgetCategory;
-  onSubcategoryClick: (subcategory: BudgetCategory) => void;
   onCollapse: () => void;
   depth: number;
-  selectionPath: { [depth: number]: BudgetCategory };
 }
 
 const CategoryDetail: React.FC<CategoryDetailProps> = ({
   category,
-  onSubcategoryClick,
   onCollapse,
   depth,
-  selectionPath,
 }) => {
   const formatCurrency = (amount: number) => {
     if (amount >= 1000000) {
@@ -128,17 +124,12 @@ const CategoryDetail: React.FC<CategoryDetailProps> = ({
           </div>
           
           <p className="breakdown-subtitle">
-            {depth === 1 
+            {depth === 1
               ? `This bar shows how the ${category.name} budget is distributed internally.`
               : 'Click any category to see detailed breakdown and subcategories.'}
           </p>
-          
-          <BudgetBar 
-            categories={category.subcategories!} 
-            onCategoryClick={onSubcategoryClick}
-            selectionPath={selectionPath}
-            currentDepth={depth + 1}
-          />
+
+          <BudgetBar categories={category.subcategories!} />
 
           {/* Legend */}
           <div className="breakdown-legend">
