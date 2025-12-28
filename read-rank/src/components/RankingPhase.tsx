@@ -201,7 +201,7 @@ export const RankingPhase: React.FC = () => {
         transition={{ duration: 0.6 }}
       >
         <p className="ev-instruction text-sm md:text-lg mb-2">
-          Award badges to the statements that matter most to you.
+          Award badges to the statements that resonate with you the most.
         </p>
         <p className="ev-instruction text-xs md:text-sm opacity-75">
           You have one Diamond (top pick) and one Gold (runner up) to award.
