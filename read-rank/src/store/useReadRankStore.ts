@@ -13,6 +13,13 @@ export interface RankedQuote extends Quote {
   timestamp: number;
 }
 
+export type BadgeType = 'diamond' | 'gold' | null;
+
+export interface BadgeAssignment {
+  diamond: string | null; // quoteId that has the diamond
+  gold: string | null;    // quoteId that has the gold
+}
+
 export interface Candidate {
   id: string;
   name: string;
@@ -45,24 +52,25 @@ export type Phase = 'evaluation' | 'ranking' | 'results';
 interface ReadRankState {
   // Current phase
   phase: Phase;
-  
+
   // Evaluation phase
   quotesToEvaluate: Quote[];
   currentQuoteIndex: number;
   agreedQuotes: Quote[];
   disagreedQuotes: Quote[];
-  
+
   // Ranking phase
   rankedQuotes: RankedQuote[];
-  
+  badgeAssignments: BadgeAssignment;
+
   // Results phase
   candidateMatches: MatchingResult[];
-  
+
   // Session data
   issueTitle: string;
   questionText: string;
   topicId: string;
-  
+
   // Actions
   setPhase: (phase: Phase) => void;
   setQuotes: (quotes: Quote[]) => void;
@@ -71,6 +79,8 @@ interface ReadRankState {
   disagreeWithQuote: (quote: Quote) => void;
   rankQuote: (quoteId: string, newRank: number) => void;
   setRankedQuotes: (quotes: Quote[]) => void;
+  assignBadge: (quoteId: string, badge: BadgeType) => void;
+  clearBadge: (badge: 'diamond' | 'gold') => void;
   setCandidateMatches: (matches: MatchingResult[]) => void;
   reset: () => void;
   setIssueInfo: (title: string, question: string, topicId: string) => void;
@@ -83,6 +93,7 @@ const initialState = {
   agreedQuotes: [],
   disagreedQuotes: [],
   rankedQuotes: [],
+  badgeAssignments: { diamond: null, gold: null } as BadgeAssignment,
   candidateMatches: [],
   issueTitle: '',
   questionText: '',
@@ -163,7 +174,40 @@ export const useReadRankStore = create<ReadRankState>()(
         }));
         set({ rankedQuotes });
       },
-      
+
+      assignBadge: (quoteId: string, badge: BadgeType) => {
+        const state = get();
+        const newAssignments = { ...state.badgeAssignments };
+
+        // If clicking the same badge on the same quote, toggle it off
+        if (badge === 'diamond' && newAssignments.diamond === quoteId) {
+          newAssignments.diamond = null;
+        } else if (badge === 'gold' && newAssignments.gold === quoteId) {
+          newAssignments.gold = null;
+        } else if (badge) {
+          // If this quote already has the other badge, remove it
+          if (badge === 'diamond' && newAssignments.gold === quoteId) {
+            newAssignments.gold = null;
+          } else if (badge === 'gold' && newAssignments.diamond === quoteId) {
+            newAssignments.diamond = null;
+          }
+          // Assign the new badge
+          newAssignments[badge] = quoteId;
+        }
+
+        set({ badgeAssignments: newAssignments });
+      },
+
+      clearBadge: (badge: 'diamond' | 'gold') => {
+        const state = get();
+        set({
+          badgeAssignments: {
+            ...state.badgeAssignments,
+            [badge]: null,
+          },
+        });
+      },
+
       setCandidateMatches: (matches) => set({ candidateMatches: matches }),
       
       setIssueInfo: (title, question, topicId) => set({ 
@@ -180,6 +224,7 @@ export const useReadRankStore = create<ReadRankState>()(
         phase: state.phase,
         agreedQuotes: state.agreedQuotes,
         rankedQuotes: state.rankedQuotes,
+        badgeAssignments: state.badgeAssignments,
         issueTitle: state.issueTitle,
         questionText: state.questionText,
         topicId: state.topicId,

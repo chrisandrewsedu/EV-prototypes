@@ -175,7 +175,7 @@ const CandidateRow: React.FC<CandidateRowProps> = ({ candidate, rank }) => {
 };
 
 export const ResultsPhase: React.FC = () => {
-  const { rankedQuotes, agreedQuotes } = useReadRankStore();
+  const { rankedQuotes, agreedQuotes, badgeAssignments } = useReadRankStore();
   const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -184,16 +184,17 @@ export const ResultsPhase: React.FC = () => {
       setLoading(true);
       try {
         // Combine ranked quotes with agreed quotes for the matching algorithm
-        const allQuotes = [...rankedQuotes, ...agreedQuotes.filter(q => 
+        const allQuotes = [...rankedQuotes, ...agreedQuotes.filter(q =>
           !rankedQuotes.find(rq => rq.id === q.id)
         )];
-        
+
         const matchingResults = await fetchMatchingResults(
           rankedQuotes,
           allQuotes,
-          mockCandidates
+          mockCandidates,
+          badgeAssignments
         );
-        
+
         setResults(matchingResults);
       } catch (error) {
         console.error('Error loading results:', error);
@@ -203,7 +204,7 @@ export const ResultsPhase: React.FC = () => {
     };
 
     loadResults();
-  }, [rankedQuotes, agreedQuotes]);
+  }, [rankedQuotes, agreedQuotes, badgeAssignments]);
 
   const handleRestart = () => {
     // Reset the store
