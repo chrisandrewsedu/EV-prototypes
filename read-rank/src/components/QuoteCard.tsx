@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
+import { motion, useMotionValue, useTransform, animate, MotionValue } from 'framer-motion';
 import { useReadRankStore, type Quote } from '../store/useReadRankStore';
 
 interface QuoteCardProps {
@@ -7,13 +7,15 @@ interface QuoteCardProps {
   isStacked?: boolean;
   stackIndex?: number;
   displayNumber?: number; // Optional display number for the quote
+  onDragStateChange?: (isDragging: boolean, x: MotionValue<number>) => void;
 }
 
-export const QuoteCard: React.FC<QuoteCardProps> = ({ 
-  quote, 
-  isStacked = false, 
+export const QuoteCard: React.FC<QuoteCardProps> = ({
+  quote,
+  isStacked = false,
   stackIndex = 0,
-  displayNumber
+  displayNumber,
+  onDragStateChange
 }) => {
   const { agreeWithQuote, disagreeWithQuote } = useReadRankStore();
   const [isAnimating, setIsAnimating] = useState(false);
@@ -30,12 +32,14 @@ export const QuoteCard: React.FC<QuoteCardProps> = ({
   const handleDragStart = () => {
     if (!isDraggable) return;
     setIsDragging(true);
+    onDragStateChange?.(true, x);
   };
 
   const handleDragEnd = async (_event: any, info: any) => {
     if (isAnimating || !isDraggable) return;
-    
+
     setIsDragging(false);
+    onDragStateChange?.(false, x);
     const { offset } = info;
     
     // Decision threshold - must drag past this point and release to commit
@@ -76,11 +80,6 @@ export const QuoteCard: React.FC<QuoteCardProps> = ({
   const scaleValue = isStacked ? 0.95 - (stackIndex * 0.02) : 1;
   const zIndexValue = isStacked ? 100 - (stackIndex * 10) : 100;
 
-  // Calculate feedback opacity based on drag distance
-  // Show feedback earlier and more gradually for better visibility
-  const agreeOpacity = useTransform(x, [20, 150], [0, 1]);
-  const disagreeOpacity = useTransform(x, [-150, -20], [1, 0]);
-
   return (
     <motion.div
       drag={isDraggable && !isAnimating}
@@ -117,28 +116,9 @@ export const QuoteCard: React.FC<QuoteCardProps> = ({
       )}
 
       {/* Quote Text */}
-      <div className="font-manrope font-medium text-base leading-relaxed relative z-10">
+      <div className="font-manrope font-medium text-base leading-relaxed">
         {quote.text}
       </div>
-
-      {/* Swipe feedback indicators - improved visibility */}
-      <motion.div 
-        className="absolute inset-0 bg-green-500 bg-opacity-30 rounded-xl flex items-center justify-center pointer-events-none"
-        style={{ opacity: agreeOpacity }}
-      >
-        <div className="bg-white bg-opacity-90 px-6 py-3 rounded-lg shadow-lg">
-          <span className="text-green-700 font-manrope font-bold text-2xl">AGREE</span>
-        </div>
-      </motion.div>
-
-      <motion.div 
-        className="absolute inset-0 bg-red-500 bg-opacity-30 rounded-xl flex items-center justify-center pointer-events-none"
-        style={{ opacity: disagreeOpacity }}
-      >
-        <div className="bg-white bg-opacity-90 px-6 py-3 rounded-lg shadow-lg">
-          <span className="text-red-700 font-manrope font-bold text-2xl">DISAGREE</span>
-        </div>
-      </motion.div>
     </motion.div>
   );
 };

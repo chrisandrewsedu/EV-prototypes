@@ -2,26 +2,45 @@ import React from 'react';
 
 export const SwipeInstructions: React.FC = () => {
   return (
-    <div className="flex justify-between items-center max-w-md mx-auto px-4">
+    <div className="swipe-instructions">
       {/* Disagree (Left) */}
-      <div className="flex flex-col items-center space-y-1">
-        <div className="text-ev-black font-manrope font-medium text-xs md:text-sm text-center max-w-20">
-          Disagree
-        </div>
-        <div className="w-6 h-6 md:w-8 md:h-8 border-l-2 border-b-2 border-ev-black transform rotate-45"></div>
-      </div>
-
-      {/* Card Indicator */}
-      <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-ev-muted-blue flex items-center justify-center">
-        <div className="w-5 h-5 md:w-6 md:h-6 bg-ev-white rounded-full"></div>
+      <div className="swipe-instruction-item">
+        <svg
+          className="swipe-arrow swipe-arrow-left"
+          width="20"
+          height="20"
+          viewBox="0 0 20 20"
+          fill="none"
+        >
+          <path
+            d="M12 4L6 10L12 16"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+        <span className="swipe-label">Swipe left to disagree</span>
       </div>
 
       {/* Agree (Right) */}
-      <div className="flex flex-col items-center space-y-1">
-        <div className="w-6 h-6 md:w-8 md:h-8 border-r-2 border-b-2 border-ev-black transform -rotate-45"></div>
-        <div className="text-ev-black font-manrope font-medium text-xs md:text-sm text-center max-w-20">
-          Agree
-        </div>
+      <div className="swipe-instruction-item">
+        <span className="swipe-label">Swipe right to agree</span>
+        <svg
+          className="swipe-arrow swipe-arrow-right"
+          width="20"
+          height="20"
+          viewBox="0 0 20 20"
+          fill="none"
+        >
+          <path
+            d="M8 4L14 10L8 16"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
       </div>
     </div>
   );

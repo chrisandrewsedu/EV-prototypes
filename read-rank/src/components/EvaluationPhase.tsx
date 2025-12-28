@@ -1,16 +1,30 @@
-import React from 'react';
+import React, { useState, useCallback } from 'react';
+import { useMotionValue, MotionValue } from 'framer-motion';
 import { useReadRankStore } from '../store/useReadRankStore';
 import { QuoteCard } from './QuoteCard';
 import { SwipeInstructions } from './SwipeInstructions';
+import { SwipeBackground } from './SwipeBackground';
 
 export const EvaluationPhase: React.FC = () => {
-  const { 
-    quotesToEvaluate, 
-    currentQuoteIndex, 
-    agreedQuotes, 
+  const {
+    quotesToEvaluate,
+    currentQuoteIndex,
+    agreedQuotes,
     disagreedQuotes,
-    setPhase 
+    setPhase
   } = useReadRankStore();
+
+  // Track drag state for swipe background
+  const [isDragging, setIsDragging] = useState(false);
+  const dragX = useMotionValue(0);
+
+  const handleDragStateChange = useCallback((dragging: boolean, x: MotionValue<number>) => {
+    setIsDragging(dragging);
+    // Sync the motion value from the card
+    return x.on('change', (latest) => {
+      dragX.set(latest);
+    });
+  }, [dragX]);
 
   const currentQuote = quotesToEvaluate[currentQuoteIndex];
   const progress = quotesToEvaluate.length > 0 
@@ -53,13 +67,17 @@ export const EvaluationPhase: React.FC = () => {
         </div>
       </div>
 
-      {/* Quote Card - pass the current index for display */}
-      <div className="flex justify-center">
-        <QuoteCard 
-          key={currentQuote.id} 
-          quote={currentQuote} 
-          displayNumber={currentQuoteIndex + 1}
-        />
+      {/* Quote Card with Swipe Background */}
+      <div className="swipe-card-container">
+        <SwipeBackground dragX={dragX} isDragging={isDragging} />
+        <div className="flex justify-center relative z-10">
+          <QuoteCard
+            key={currentQuote.id}
+            quote={currentQuote}
+            displayNumber={currentQuoteIndex + 1}
+            onDragStateChange={handleDragStateChange}
+          />
+        </div>
       </div>
 
       {/* Swipe Instructions */}

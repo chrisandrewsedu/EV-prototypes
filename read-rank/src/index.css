@@ -109,3 +109,148 @@ body {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Swipe Instructions - Matches treasury-tracker design aesthetic */
+.swipe-instructions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 28rem;
+  margin: 0 auto;
+  padding: 1rem 1.5rem;
+  background-color: #ffffff;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.swipe-instruction-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.swipe-label {
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #6b7280;
+  line-height: 1.4;
+}
+
+.swipe-arrow {
+  color: #6b7280;
+  flex-shrink: 0;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.swipe-arrow-left {
+  color: #ef4444;
+}
+
+.swipe-arrow-right {
+  color: #22c55e;
+}
+
+/* Hover animation for visual feedback */
+.swipe-instruction-item:first-child:hover .swipe-arrow-left {
+  transform: translateX(-3px);
+}
+
+.swipe-instruction-item:last-child:hover .swipe-arrow-right {
+  transform: translateX(3px);
+}
+
+@media (max-width: 480px) {
+  .swipe-instructions {
+    padding: 0.875rem 1rem;
+    gap: 0.75rem;
+  }
+
+  .swipe-label {
+    font-size: 0.8125rem;
+  }
+
+  .swipe-arrow {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+/* Swipe Background - Split zones behind card */
+.swipe-card-container {
+  position: relative;
+  width: 100%;
+  min-height: 200px;
+}
+
+.swipe-background-container {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  border-radius: 1rem;
+  overflow: hidden;
+  transition: opacity 0.15s ease-out;
+  pointer-events: none;
+}
+
+.swipe-zone {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.1s ease-out;
+}
+
+.swipe-zone-disagree {
+  background: linear-gradient(to right, #ef4444, #f87171);
+}
+
+.swipe-zone-agree {
+  background: linear-gradient(to left, #22c55e, #4ade80);
+}
+
+.swipe-zone-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.swipe-zone-icon {
+  width: 48px;
+  height: 48px;
+}
+
+.swipe-zone-disagree .swipe-zone-icon {
+  color: #ffffff;
+}
+
+.swipe-zone-agree .swipe-zone-icon {
+  color: #ffffff;
+}
+
+.swipe-zone-label {
+  font-family: 'Manrope', sans-serif;
+  font-weight: 700;
+  font-size: 1.25rem;
+  letter-spacing: 0.05em;
+}
+
+.swipe-zone-disagree .swipe-zone-label {
+  color: #ffffff;
+}
+
+.swipe-zone-agree .swipe-zone-label {
+  color: #ffffff;
+}
+
+@media (max-width: 480px) {
+  .swipe-zone-icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .swipe-zone-label {
+    font-size: 1rem;
+  }
+}
