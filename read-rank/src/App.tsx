@@ -1,25 +1,10 @@
-import { useEffect } from 'react';
-import { useReadRankStore } from './store/useReadRankStore';
-import { mockQuotes, mockIssueData } from './data/mockData';
-import { shuffleArray } from './utils/matchingAlgorithm';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { PhaseContainer } from './components/PhaseContainer';
 import { ProgressHeader } from './components/ProgressHeader';
 import { DevHelper } from './components/DevHelper';
+import { CandidateAlignmentPage } from './components/CandidateAlignmentPage';
 
-function App() {
-  const { 
-    setQuotes, 
-    setIssueInfo
-  } = useReadRankStore();
-
-  // Initialize the app with mock data
-  useEffect(() => {
-    // Shuffle quotes to randomize the order
-    const shuffledQuotes = shuffleArray(mockQuotes);
-    setQuotes(shuffledQuotes);
-    setIssueInfo(mockIssueData.title, mockIssueData.question, mockIssueData.topicId);
-  }, [setQuotes, setIssueInfo]);
-
+function MainApp() {
   return (
     <div className="min-h-screen bg-ev-white">
       <DevHelper />
@@ -28,6 +13,17 @@ function App() {
         <PhaseContainer />
       </main>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <BrowserRouter basename="/read-rank/dist">
+      <Routes>
+        <Route path="/" element={<MainApp />} />
+        <Route path="/candidate/:candidateId/alignment" element={<CandidateAlignmentPage />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 

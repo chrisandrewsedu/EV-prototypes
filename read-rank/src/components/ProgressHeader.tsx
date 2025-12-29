@@ -2,10 +2,12 @@ import React from 'react';
 import { useReadRankStore } from '../store/useReadRankStore';
 
 export const ProgressHeader: React.FC = () => {
-  const { phase, issueTitle, reset, setPhase } = useReadRankStore();
+  const { phase, issueTitle, reset, setPhase, goToHub } = useReadRankStore();
 
   const getPhaseTitle = () => {
     switch (phase) {
+      case 'hub':
+        return 'Choose an Issue';
       case 'evaluation':
         return 'Evaluate Quotes';
       case 'ranking':
@@ -13,12 +15,14 @@ export const ProgressHeader: React.FC = () => {
       case 'results':
         return 'Your Results';
       default:
-        return 'Evaluate Quotes';
+        return 'Choose an Issue';
     }
   };
 
   const getProgressPercentage = () => {
     switch (phase) {
+      case 'hub':
+        return 0;
       case 'evaluation':
         return 33;
       case 'ranking':
@@ -38,14 +42,17 @@ export const ProgressHeader: React.FC = () => {
   };
 
   const handleBack = () => {
-    if (phase === 'ranking') {
+    if (phase === 'evaluation') {
+      goToHub();
+    } else if (phase === 'ranking') {
       setPhase('evaluation');
     } else if (phase === 'results') {
       setPhase('ranking');
     }
   };
 
-  const canGoBack = phase === 'ranking' || phase === 'results';
+  const canGoBack = phase === 'evaluation' || phase === 'ranking' || phase === 'results';
+  const isInHub = phase === 'hub';
 
   return (
     <header className="bg-ev-white border-b border-gray-200 sticky top-0 z-50">
@@ -61,7 +68,9 @@ export const ProgressHeader: React.FC = () => {
                 aria-label="Go back"
               >
                 <span className="text-lg">←</span>
-                <span className="hidden sm:inline">Back</span>
+                <span className="hidden sm:inline">
+                  {phase === 'evaluation' ? 'Issues' : 'Back'}
+                </span>
               </button>
             ) : (
               <div></div>
@@ -85,38 +94,42 @@ export const ProgressHeader: React.FC = () => {
           </div>
         </div>
 
-        {/* Phase Title and Issue */}
-        <div className="text-center mb-2">
-          <h2 className="ev-text-primary text-base md:text-xl font-manrope font-bold mb-1">
-            {getPhaseTitle()}
-          </h2>
-          {issueTitle && (
-            <h3 className="ev-text-secondary text-sm md:text-base font-manrope font-medium">
-              {issueTitle}
-            </h3>
-          )}
-        </div>
+        {/* Phase Title and Issue - Only show when not in hub */}
+        {!isInHub && (
+          <>
+            <div className="text-center mb-2">
+              <h2 className="ev-text-primary text-base md:text-xl font-manrope font-bold mb-1">
+                {getPhaseTitle()}
+              </h2>
+              {issueTitle && (
+                <h3 className="ev-text-secondary text-sm md:text-base font-manrope font-medium">
+                  {issueTitle}
+                </h3>
+              )}
+            </div>
 
-        {/* Progress Bar */}
-        <div className="w-full bg-gray-200 rounded-full h-1.5 md:h-2 mb-1">
-          <div 
-            className="ev-coral h-1.5 md:h-2 rounded-full transition-all duration-500 ease-out"
-            style={{ width: `${getProgressPercentage()}%` }}
-          />
-        </div>
+            {/* Progress Bar */}
+            <div className="w-full bg-gray-200 rounded-full h-1.5 md:h-2 mb-1">
+              <div
+                className="ev-coral h-1.5 md:h-2 rounded-full transition-all duration-500 ease-out"
+                style={{ width: `${getProgressPercentage()}%` }}
+              />
+            </div>
 
-        {/* Phase Indicator */}
-        <div className="flex justify-between text-xs text-ev-light-blue">
-          <span className={phase === 'evaluation' ? 'font-bold text-ev-coral' : ''}>
-            Evaluate
-          </span>
-          <span className={phase === 'ranking' ? 'font-bold text-ev-coral' : ''}>
-            Rank
-          </span>
-          <span className={phase === 'results' ? 'font-bold text-ev-coral' : ''}>
-            Results
-          </span>
-        </div>
+            {/* Phase Indicator */}
+            <div className="flex justify-between text-xs text-ev-light-blue">
+              <span className={phase === 'evaluation' ? 'font-bold text-ev-coral' : ''}>
+                Evaluate
+              </span>
+              <span className={phase === 'ranking' ? 'font-bold text-ev-coral' : ''}>
+                Rank
+              </span>
+              <span className={phase === 'results' ? 'font-bold text-ev-coral' : ''}>
+                Results
+              </span>
+            </div>
+          </>
+        )}
       </div>
     </header>
   );

@@ -1,5 +1,6 @@
 import React from 'react';
 import { useReadRankStore } from '../store/useReadRankStore';
+import { IssueHub } from './IssueHub';
 import { EvaluationPhase } from './EvaluationPhase';
 import { RankingPhase } from './RankingPhase';
 import { ResultsPhase } from './ResultsPhase';
@@ -9,6 +10,8 @@ export const PhaseContainer: React.FC = () => {
 
   const renderPhase = () => {
     switch (phase) {
+      case 'hub':
+        return <IssueHub />;
       case 'evaluation':
         return <EvaluationPhase />;
       case 'ranking':
@@ -16,7 +19,7 @@ export const PhaseContainer: React.FC = () => {
       case 'results':
         return <ResultsPhase />;
       default:
-        return <EvaluationPhase />;
+        return <IssueHub />;
     }
   };
 
