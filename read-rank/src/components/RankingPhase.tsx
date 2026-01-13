@@ -5,6 +5,7 @@ import {
   closestCenter,
   KeyboardSensor,
   PointerSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   type DragEndEvent,
@@ -63,11 +64,13 @@ const SortableQuoteCard: React.FC<QuoteCardProps> = ({
       ref={setNodeRef}
       style={style}
       className="relative"
+      {...attributes}
+      {...listeners}
     >
       <div
         className={`
           ev-quote-card relative overflow-visible
-          transition-all duration-300
+          transition-all duration-300 cursor-grab active:cursor-grabbing
           ${hasBadge
             ? hasDiamond
               ? 'ring-2 ring-cyan-400 shadow-lg shadow-cyan-500/20'
@@ -77,26 +80,6 @@ const SortableQuoteCard: React.FC<QuoteCardProps> = ({
           ${isDragging ? 'shadow-2xl scale-[1.02]' : ''}
         `}
       >
-        {/* Drag Handle */}
-        <div
-          {...attributes}
-          {...listeners}
-          className="absolute -left-2 top-1/2 -translate-y-1/2 -translate-x-full px-2 py-4 cursor-grab active:cursor-grabbing touch-none"
-          aria-label="Drag to reorder"
-        >
-          <svg
-            className="w-5 h-5 text-white/40 hover:text-white/70 transition-colors"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-          >
-            <circle cx="9" cy="6" r="1.5" />
-            <circle cx="15" cy="6" r="1.5" />
-            <circle cx="9" cy="12" r="1.5" />
-            <circle cx="15" cy="12" r="1.5" />
-            <circle cx="9" cy="18" r="1.5" />
-            <circle cx="15" cy="18" r="1.5" />
-          </svg>
-        </div>
         {/* Badge indicator when active - shows in top-left corner */}
         <AnimatePresence>
           {hasBadge && (
@@ -228,7 +211,13 @@ export const RankingPhase: React.FC = () => {
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 8,
+        distance: 5,
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 150,
+        tolerance: 5,
       },
     }),
     useSensor(KeyboardSensor, {
@@ -321,7 +310,7 @@ export const RankingPhase: React.FC = () => {
       </motion.div>
 
       {/* Quote Cards */}
-      <div className="max-w-2xl mx-auto pl-8">
+      <div className="max-w-2xl mx-auto">
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
