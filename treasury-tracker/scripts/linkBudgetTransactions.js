@@ -5,12 +5,18 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Number of transactions to include in the preview (for fast initial load)
+const PREVIEW_TRANSACTION_COUNT = 20;
+
 /**
  * Budget-Transaction Linker
  *
  * This script reads the processed budget data and transaction index,
  * then merges linked transaction summaries into the budget categories.
  * This enables the drill-down flow: Budget Category → Transactions
+ *
+ * To keep file sizes manageable, only a preview of transactions is embedded.
+ * The full transaction list can be loaded on demand from the index file.
  */
 
 class BudgetTransactionLinker {
@@ -30,7 +36,10 @@ class BudgetTransactionLinker {
         transactionCount: linked.transactionCount,
         vendorCount: linked.vendorCount,
         topVendors: linked.topVendors,
-        transactions: linked.transactions
+        // Only include a preview of transactions for fast initial load
+        // Full list can be loaded on demand from the transaction index
+        transactions: linked.transactions.slice(0, PREVIEW_TRANSACTION_COUNT),
+        hasMore: linked.transactions.length > PREVIEW_TRANSACTION_COUNT
       };
       stats.linkedCategories++;
       stats.linkedTransactions += linked.transactionCount;

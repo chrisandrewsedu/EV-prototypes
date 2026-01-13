@@ -184,9 +184,9 @@ class TransactionsProcessor {
         transactionCount: value.transactions.length,
         vendorCount: value.vendors.size,
         topVendors: topVendors,
+        // Include ALL transactions, sorted by date (most recent first)
         transactions: value.transactions
           .sort((a, b) => new Date(b.date) - new Date(a.date))
-          .slice(0, 100) // Limit to 100 most recent transactions per linkKey
       };
     }
 

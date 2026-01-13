@@ -133,38 +133,6 @@ const QuoteCard: React.FC<QuoteCardProps> = ({ quote, badge, index }) => {
   );
 };
 
-// Component for quotes that haven't been evaluated yet
-const UnevaluatedQuoteCard: React.FC<{ quote: Quote; index: number }> = ({ quote, index }) => {
-  return (
-    <motion.div
-      className="bg-gray-50 rounded-lg border-l-4 border-l-gray-300 shadow-sm p-4"
-      initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ delay: index * 0.1, duration: 0.3 }}
-    >
-      <div className="flex items-center justify-end mb-2">
-        <span className="inline-flex items-center gap-1 bg-gray-200 text-gray-500 px-2 py-0.5 rounded-full text-xs font-medium">
-          Not Evaluated
-        </span>
-      </div>
-      <p className="text-gray-500 text-sm leading-relaxed italic">"{quote.text}"</p>
-      {quote.sourceUrl && (
-        <a
-          href={quote.sourceUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 mt-3 text-sm text-gray-400 hover:text-gray-600 transition-colors"
-        >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-          </svg>
-          <span>{quote.sourceName || 'View Source'}</span>
-        </a>
-      )}
-    </motion.div>
-  );
-};
-
 export const CandidateAlignmentPage: React.FC = () => {
   const { candidateId } = useParams<{ candidateId: string }>();
   const navigate = useNavigate();
@@ -401,27 +369,21 @@ export const CandidateAlignmentPage: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Issue Quotes */}
+                {/* Issue Quotes - only show evaluated quotes */}
                 <div className="p-4 space-y-3">
-                  {issueData.quotes.length === 0 ? (
-                    <p className="text-gray-500 text-sm">No quotes available for this issue.</p>
+                  {issueData.quotes.filter(q => q.badge !== 'unevaluated').length === 0 ? (
+                    <p className="text-gray-500 text-sm">No evaluated quotes for this issue yet.</p>
                   ) : (
-                    issueData.quotes.map(({ quote, badge }, quoteIndex) => (
-                      badge === 'unevaluated' ? (
-                        <UnevaluatedQuoteCard
-                          key={quote.id}
-                          quote={quote}
-                          index={quoteIndex}
-                        />
-                      ) : (
+                    issueData.quotes
+                      .filter(({ badge }) => badge !== 'unevaluated')
+                      .map(({ quote, badge }, quoteIndex) => (
                         <QuoteCard
                           key={quote.id}
                           quote={quote}
-                          badge={badge}
+                          badge={badge as 'diamond' | 'gold' | 'agreed' | 'disagreed'}
                           index={quoteIndex}
                         />
-                      )
-                    ))
+                      ))
                   )}
                 </div>
               </motion.div>

@@ -5,10 +5,9 @@ import NavigationTabs from './components/NavigationTabs';
 import SearchBar from './components/SearchBar';
 import YearSelector from './components/YearSelector';
 import Breadcrumb from './components/Breadcrumb';
-import BudgetBar from './components/BudgetBar';
+import BudgetSunburst from './components/BudgetSunburst';
 import CategoryList from './components/CategoryList';
 import LineItemsTable from './components/LineItemsTable';
-import TransactionLineItemsTable from './components/TransactionLineItemsTable';
 import LinkedTransactionsPanel from './components/LinkedTransactionsPanel';
 import type { BudgetCategory, BudgetData } from './types/budget';
 import './App.css'
@@ -18,15 +17,14 @@ interface BreadcrumbItem {
   onClick?: () => void;
 }
 
-type DatasetType = 'revenue' | 'operating' | 'salaries' | 'transactions';
+type DatasetType = 'revenue' | 'operating' | 'salaries';
 
 // Helper function to load any dataset
 async function loadDataset(type: DatasetType, year: number): Promise<BudgetData> {
-  const fileMap = {
+  const fileMap: Record<DatasetType, string> = {
     revenue: 'revenue',
     operating: 'budget',
-    salaries: 'salaries',
-    transactions: 'transactions'
+    salaries: 'salaries'
   };
 
   const fileName = fileMap[type];
@@ -55,7 +53,7 @@ async function loadDataset(type: DatasetType, year: number): Promise<BudgetData>
 
 // Get display text for each dataset
 function getDatasetDisplayText(type: DatasetType) {
-  const texts = {
+  const texts: Record<DatasetType, { title: string; description: string; lineItemsDescription: string; transactionsDescription?: string }> = {
     revenue: {
       title: 'funds its budget',
       description: 'Each segment shows where city revenue comes from. Tap any source to explore its breakdown.',
@@ -64,30 +62,25 @@ function getDatasetDisplayText(type: DatasetType) {
     operating: {
       title: 'spends its budget',
       description: 'Each segment shows the share of the total budget. Tap any category to explore its breakdown.',
-      lineItemsDescription: 'Detailed line items showing individual expenditures and actual amounts spent.'
+      lineItemsDescription: 'Individual transactions showing vendors, amounts, dates, and payment details.',
+      transactionsDescription: 'Individual transactions showing vendors, amounts, dates, and payment details.'
     },
     salaries: {
       title: 'compensates its workforce',
       description: 'Each segment shows department payroll. Tap any department to see position breakdowns.',
       lineItemsDescription: 'Detailed compensation showing base pay, benefits, overtime, and other pay.'
-    },
-    transactions: {
-      title: 'purchases goods and services',
-      description: 'Each segment shows spending by department. Tap to see recent transactions and vendors.',
-      lineItemsDescription: 'Recent transactions showing vendors, amounts, dates, and descriptions.'
     }
   };
-  
+
   return texts[type];
 }
 
 // Get dataset label for breadcrumbs
 function getDatasetLabel(type: DatasetType): string {
-  const labels = {
+  const labels: Record<DatasetType, string> = {
     revenue: 'Revenue',
     operating: 'Budget',
-    salaries: 'Salaries',
-    transactions: 'Transactions'
+    salaries: 'Salaries'
   };
   return labels[type];
 }
@@ -155,6 +148,11 @@ function App() {
       setNavigationPath([...navigationPath, category]);
     }
   }, [navigationPath]);
+
+  // Handler for sunburst clicks - sets the full navigation path directly
+  const handlePathClick = useCallback((path: BudgetCategory[]) => {
+    setNavigationPath(path);
+  }, []);
 
   const handleBack = useCallback(() => {
     setNavigationPath(navigationPath.slice(0, -1));
@@ -410,31 +408,46 @@ function App() {
           </p>
           
           {showLineItems ? (
-            // Show line items table at the lowest level
+            // At the lowest level
             <>
-              {activeDataset === 'transactions' ? (
-                <TransactionLineItemsTable
-                  lineItems={currentCategory!.lineItems!}
-                  categoryName={currentCategory!.name}
-                />
+              {/* For Money Out, show sunburst + transactions instead of line items */}
+              {activeDataset === 'operating' ? (
+                <>
+                  {/* Sunburst visualization at lowest level too */}
+                  <BudgetSunburst
+                    categories={budgetData.categories}
+                    navigationPath={navigationPath}
+                    totalBudget={budgetData.metadata.totalBudget}
+                    onPathClick={handlePathClick}
+                  />
+
+                  {/* Show linked transactions directly */}
+                  {currentCategory?.linkedTransactions && (
+                    <LinkedTransactionsPanel
+                      linkedTransactions={currentCategory.linkedTransactions}
+                      categoryName={currentCategory.name}
+                      linkKey={currentCategory.linkKey}
+                      fiscalYear={parseInt(selectedYear)}
+                    />
+                  )}
+                </>
               ) : (
+                // For other datasets (revenue, salaries), show line items table
                 <LineItemsTable
                   lineItems={currentCategory!.lineItems!}
                   categoryName={currentCategory!.name}
                 />
               )}
-              {/* Show linked transactions for budget categories */}
-              {activeDataset === 'operating' && currentCategory?.linkedTransactions && (
-                <LinkedTransactionsPanel
-                  linkedTransactions={currentCategory.linkedTransactions}
-                  categoryName={currentCategory.name}
-                />
-              )}
             </>
           ) : displayCategories.length > 0 ? (
             <>
-              {/* Visual budget bar (non-interactive) */}
-              <BudgetBar categories={displayCategories} />
+              {/* Sunburst visualization - shows full hierarchy with current selection highlighted */}
+              <BudgetSunburst
+                categories={budgetData.categories}
+                navigationPath={navigationPath}
+                totalBudget={budgetData.metadata.totalBudget}
+                onPathClick={handlePathClick}
+              />
 
               {/* Interactive category list */}
               <CategoryList
@@ -447,6 +460,8 @@ function App() {
                 <LinkedTransactionsPanel
                   linkedTransactions={currentCategory.linkedTransactions}
                   categoryName={currentCategory.name}
+                  linkKey={currentCategory.linkKey}
+                  fiscalYear={parseInt(selectedYear)}
                 />
               )}
             </>
@@ -467,7 +482,7 @@ function App() {
             fontSize: '0.875rem',
             color: 'var(--text-gray)'
           }}>
-            <strong>💡 Tip:</strong> Tap any category to drill down into its breakdown. Use breadcrumbs or the back button to navigate back. Switch datasets using the tabs above to explore revenue, salaries, and transactions.
+            <strong>💡 Tip:</strong> Tap any category to drill down into its breakdown. Use breadcrumbs or the back button to navigate back. Switch datasets using the tabs above to explore revenue and salaries. Drill into Money Out to see individual transactions.
           </div>
         )}
       </div>

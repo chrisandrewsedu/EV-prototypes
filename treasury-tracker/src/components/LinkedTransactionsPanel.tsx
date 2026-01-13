@@ -1,12 +1,16 @@
-import { Receipt, Building2, Calendar, CreditCard } from 'lucide-react';
-import type { LinkedTransactionSummary } from '../types/budget';
+import { useState, useCallback } from 'react';
+import { Receipt, Building2, Calendar, CreditCard, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
+import type { LinkedTransactionSummary, LinkedTransaction } from '../types/budget';
 import './LinkedTransactionsPanel.css';
 
 interface LinkedTransactionsPanelProps {
   linkedTransactions: LinkedTransactionSummary;
   categoryName: string;
-  onViewAll?: () => void;
+  linkKey?: string;
+  fiscalYear?: number;
 }
+
+const TRANSACTIONS_PER_PAGE = 20;
 
 const formatCurrency = (amount: number): string => {
   if (amount >= 1000000) {
@@ -40,13 +44,68 @@ const formatDate = (dateStr: string): string => {
 export default function LinkedTransactionsPanel({
   linkedTransactions,
   categoryName,
-  onViewAll
+  linkKey,
+  fiscalYear = 2025
 }: LinkedTransactionsPanelProps) {
-  const { totalAmount, transactionCount, vendorCount, topVendors, transactions } = linkedTransactions;
+  const { totalAmount, transactionCount, vendorCount, topVendors, transactions: initialTransactions, hasMore } = linkedTransactions;
 
-  // Show top 5 transactions
-  const displayTransactions = transactions.slice(0, 5);
-  const hasMore = transactions.length > 5;
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(TRANSACTIONS_PER_PAGE);
+  const [allTransactions, setAllTransactions] = useState<LinkedTransaction[]>(initialTransactions);
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [hasLoadedAll, setHasLoadedAll] = useState(!hasMore);
+
+  // Load all transactions from the index file
+  const loadAllTransactions = useCallback(async () => {
+    if (!linkKey || hasLoadedAll) return;
+
+    setIsLoading(true);
+    setLoadError(null);
+
+    try {
+      const response = await fetch(`./data/transactions-${fiscalYear}-index.json`);
+      if (!response.ok) {
+        throw new Error('Failed to load transaction index');
+      }
+
+      const index = await response.json();
+      if (index[linkKey]) {
+        setAllTransactions(index[linkKey].transactions);
+        setHasLoadedAll(true);
+      }
+    } catch (error) {
+      console.error('Error loading transactions:', error);
+      setLoadError('Failed to load additional transactions');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [linkKey, fiscalYear, hasLoadedAll]);
+
+  // When collapsed, show 5 transactions; when expanded, show paginated list
+  const displayTransactions = isExpanded
+    ? allTransactions.slice(0, visibleCount)
+    : allTransactions.slice(0, 5);
+
+  const hasMoreToLoad = visibleCount < allTransactions.length;
+  const canExpand = transactionCount > 5;
+
+  const handleLoadMore = () => {
+    setVisibleCount(prev => Math.min(prev + TRANSACTIONS_PER_PAGE, allTransactions.length));
+  };
+
+  const handleToggleExpand = async () => {
+    if (isExpanded) {
+      setIsExpanded(false);
+      setVisibleCount(TRANSACTIONS_PER_PAGE);
+    } else {
+      setIsExpanded(true);
+      // Load all transactions if we haven't yet and there are more available
+      if (hasMore && !hasLoadedAll) {
+        await loadAllTransactions();
+      }
+    }
+  };
 
   return (
     <div className="linked-transactions-panel">
@@ -100,10 +159,18 @@ export default function LinkedTransactionsPanel({
         </div>
       )}
 
-      {/* Recent Transactions */}
+      {/* Transactions List */}
       <div className="linked-transactions-list">
-        <h4>Recent Transactions</h4>
-        <div className="transaction-list">
+        <div className="transactions-list-header">
+          <h4>{isExpanded ? 'All Transactions' : 'Recent Transactions'}</h4>
+          {isExpanded && (
+            <span className="transactions-count">
+              Showing {displayTransactions.length} of {transactionCount.toLocaleString()}
+            </span>
+          )}
+        </div>
+
+        <div className={`transaction-list ${isExpanded ? 'expanded' : ''}`}>
           {displayTransactions.map((tx, index) => (
             <div key={index} className="transaction-item">
               <div className="transaction-main">
@@ -132,11 +199,54 @@ export default function LinkedTransactionsPanel({
           ))}
         </div>
 
-        {hasMore && onViewAll && (
-          <button className="view-all-button" onClick={onViewAll}>
-            View all {transactionCount.toLocaleString()} transactions
-          </button>
+        {/* Loading indicator */}
+        {isLoading && (
+          <div className="loading-indicator">
+            <Loader2 size={20} className="spinner" />
+            Loading all transactions...
+          </div>
         )}
+
+        {/* Error message */}
+        {loadError && (
+          <div className="load-error">
+            {loadError}
+          </div>
+        )}
+
+        {/* Action Buttons */}
+        <div className="transactions-actions">
+          {isExpanded && hasMoreToLoad && !isLoading && (
+            <button className="load-more-button" onClick={handleLoadMore}>
+              Load more ({Math.min(TRANSACTIONS_PER_PAGE, allTransactions.length - visibleCount)} more)
+            </button>
+          )}
+
+          {canExpand && (
+            <button
+              className="toggle-expand-button"
+              onClick={handleToggleExpand}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 size={16} className="spinner" />
+                  Loading...
+                </>
+              ) : isExpanded ? (
+                <>
+                  <ChevronUp size={16} />
+                  Collapse
+                </>
+              ) : (
+                <>
+                  <ChevronDown size={16} />
+                  View all {transactionCount.toLocaleString()} transactions
+                </>
+              )}
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

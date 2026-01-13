@@ -40,6 +40,7 @@ export interface LinkedTransactionSummary {
   vendorCount: number;
   topVendors: Array<{ name: string; amount: number; count: number }>;
   transactions: LinkedTransaction[];
+  hasMore?: boolean; // True if there are more transactions available in the index file
 }
 
 export interface BudgetCategory {

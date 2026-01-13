@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { DollarSign, TrendingDown, Users, Receipt, ChevronDown } from 'lucide-react';
+import { DollarSign, TrendingDown, Users, ChevronDown } from 'lucide-react';
 
 export interface Dataset {
-  id: 'revenue' | 'operating' | 'salaries' | 'transactions';
+  id: 'revenue' | 'operating' | 'salaries';
   label: string;
   icon: typeof DollarSign;
   color: string;
@@ -41,15 +41,8 @@ const DATASETS: Dataset[] = [
     color: '#9d3c89', // purple-600
     lightColor: '#b957a8', // purple-500
     description: 'Workforce & compensation'
-  },
-  {
-    id: 'transactions',
-    label: 'Transactions',
-    icon: Receipt,
-    color: '#914926', // chestnut-600
-    lightColor: '#b0633a', // chestnut-500
-    description: 'Individual purchases'
   }
+  // Transactions tab removed - transactions are now shown within Money Out drill-down
 ];
 
 const formatCurrency = (amount: number): string => {
