@@ -1,23 +1,55 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { useReadRankStore, type Quote } from '../store/useReadRankStore';
 import { DiamondBadge, GoldBadge } from './BadgeIcons';
 
 interface CompactQuoteCardProps {
   quote: Quote;
-  index: number;
   diamondQuoteId: string | null;
   goldQuoteId: string | null;
   onAssignBadge: (quoteId: string, badge: 'diamond' | 'gold') => void;
 }
 
-const CompactQuoteCard: React.FC<CompactQuoteCardProps> = ({
+const SortableCompactQuoteCard: React.FC<CompactQuoteCardProps> = ({
   quote,
-  index,
   diamondQuoteId,
   goldQuoteId,
   onAssignBadge,
 }) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: quote.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 10 : 0,
+    opacity: isDragging ? 0.8 : 1,
+  };
+
   const hasDiamond = diamondQuoteId === quote.id;
   const hasGold = goldQuoteId === quote.id;
   const hasBadge = hasDiamond || hasGold;
@@ -28,29 +60,24 @@ const CompactQuoteCard: React.FC<CompactQuoteCardProps> = ({
   const goldDisabled = (goldQuoteId !== null && !hasGold) || hasDiamond;
 
   return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, x: 50, scale: 0.9 }}
-      animate={{ opacity: 1, x: 0, scale: 1 }}
-      exit={{ opacity: 0, x: -20, scale: 0.9 }}
-      transition={{
-        layout: { duration: 0.3, ease: [0.25, 0.1, 0.25, 1] },
-        opacity: { duration: 0.3 },
-        x: { duration: 0.4, ease: 'easeOut' },
-        delay: index * 0.05,
-      }}
+    <div
+      ref={setNodeRef}
+      style={style}
       className="relative"
+      {...attributes}
+      {...listeners}
     >
       <div
         className={`
           sidebar-quote-card relative overflow-visible
-          transition-all duration-300
+          transition-all duration-300 cursor-grab active:cursor-grabbing
           ${hasBadge
             ? hasDiamond
               ? 'ring-2 ring-cyan-400 shadow-lg shadow-cyan-500/20'
               : 'ring-2 ring-amber-400 shadow-lg shadow-amber-500/20'
             : ''
           }
+          ${isDragging ? 'shadow-2xl scale-[1.02]' : ''}
         `}
       >
         {/* Badge indicator in corner */}
@@ -149,7 +176,7 @@ const CompactQuoteCard: React.FC<CompactQuoteCardProps> = ({
           </div>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 };
 
@@ -158,9 +185,38 @@ export const AgreedQuotesSidebar: React.FC = () => {
     agreedQuotes,
     badgeAssignments,
     assignBadge,
+    reorderAgreedQuotes,
     quotesToEvaluate,
     currentQuoteIndex,
   } = useReadRankStore();
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5,
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 150,
+        tolerance: 5,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      const oldIndex = agreedQuotes.findIndex((q) => q.id === active.id);
+      const newIndex = agreedQuotes.findIndex((q) => q.id === over.id);
+      const reordered = arrayMove(agreedQuotes, oldIndex, newIndex);
+      reorderAgreedQuotes(reordered);
+    }
+  };
 
   const handleAssignBadge = (quoteId: string, badge: 'diamond' | 'gold') => {
     assignBadge(quoteId, badge);
@@ -199,30 +255,40 @@ export const AgreedQuotesSidebar: React.FC = () => {
 
       {/* Quote list */}
       <div className="sidebar-quotes-list">
-        <AnimatePresence>
-          {agreedQuotes.length === 0 ? (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="sidebar-empty-state"
+        {agreedQuotes.length === 0 ? (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="sidebar-empty-state"
+          >
+            <p className="text-xs text-gray-400 text-center">
+              Quotes you agree with will appear here
+            </p>
+          </motion.div>
+        ) : (
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={agreedQuotes.map((q) => q.id)}
+              strategy={verticalListSortingStrategy}
             >
-              <p className="text-xs text-gray-400 text-center">
-                Quotes you agree with will appear here
-              </p>
-            </motion.div>
-          ) : (
-            agreedQuotes.map((quote, index) => (
-              <CompactQuoteCard
-                key={quote.id}
-                quote={quote}
-                index={index}
-                diamondQuoteId={badgeAssignments.diamond}
-                goldQuoteId={badgeAssignments.gold}
-                onAssignBadge={handleAssignBadge}
-              />
-            ))
-          )}
-        </AnimatePresence>
+              <div className="space-y-3">
+                {agreedQuotes.map((quote) => (
+                  <SortableCompactQuoteCard
+                    key={quote.id}
+                    quote={quote}
+                    diamondQuoteId={badgeAssignments.diamond}
+                    goldQuoteId={badgeAssignments.gold}
+                    onAssignBadge={handleAssignBadge}
+                  />
+                ))}
+              </div>
+            </SortableContext>
+          </DndContext>
+        )}
       </div>
 
       {/* Progress indicator */}
