@@ -5,14 +5,12 @@ interface ActionButtonsProps {
   onAgree: () => void;
   onDisagree: () => void;
   disabled?: boolean;
-  showKeyboardHints?: boolean;
 }
 
 export const ActionButtons: React.FC<ActionButtonsProps> = ({
   onAgree,
   onDisagree,
   disabled = false,
-  showKeyboardHints = true,
 }) => {
   return (
     <div className="action-buttons-container">
@@ -38,9 +36,6 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
             <path d="M18 6L6 18M6 6l12 12" />
           </svg>
           <span className="action-button-label">Disagree</span>
-          {showKeyboardHints && (
-            <span className="action-button-hint">← or A</span>
-          )}
         </div>
       </motion.button>
 
@@ -66,9 +61,6 @@ export const ActionButtons: React.FC<ActionButtonsProps> = ({
             <path d="M20 6L9 17l-5-5" />
           </svg>
           <span className="action-button-label">Agree</span>
-          {showKeyboardHints && (
-            <span className="action-button-hint">→ or D</span>
-          )}
         </div>
       </motion.button>
     </div>

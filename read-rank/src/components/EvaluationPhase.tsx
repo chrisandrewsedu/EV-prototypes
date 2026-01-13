@@ -160,12 +160,11 @@ export const EvaluationPhase: React.FC = () => {
               onAgree={() => handleButtonSwipe('agree')}
               onDisagree={() => handleButtonSwipe('disagree')}
               disabled={isAnimating}
-              showKeyboardHints={true}
             />
           )}
 
-          {/* Swipe Instructions */}
-          <SwipeInstructions />
+          {/* Swipe Instructions - only for touch devices */}
+          {!isMouseDevice && <SwipeInstructions />}
         </>
       ) : (
         <div className="evaluation-complete-card">

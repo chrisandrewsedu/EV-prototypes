@@ -87,6 +87,7 @@ interface ReadRankState {
   disagreeWithQuote: (quote: Quote) => void;
   rankQuote: (quoteId: string, newRank: number) => void;
   setRankedQuotes: (quotes: Quote[]) => void;
+  reorderAgreedQuotes: (quotes: Quote[]) => void;
   assignBadge: (quoteId: string, badge: BadgeType) => void;
   clearBadge: (badge: 'diamond' | 'gold') => void;
   setCandidateMatches: (matches: MatchingResult[]) => void;
@@ -338,6 +339,25 @@ export const useReadRankStore = create<ReadRankState>()(
             [issueId]: {
               ...progress,
               rankedQuotes,
+            },
+          },
+        });
+      },
+
+      reorderAgreedQuotes: (quotes: Quote[]) => {
+        const state = get();
+        const issueId = state.currentIssueId;
+        if (!issueId || !state.issueProgress[issueId]) return;
+
+        const progress = state.issueProgress[issueId];
+
+        set({
+          agreedQuotes: quotes,
+          issueProgress: {
+            ...state.issueProgress,
+            [issueId]: {
+              ...progress,
+              agreedQuotes: quotes,
             },
           },
         });

@@ -1,23 +1,54 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { useReadRankStore } from '../store/useReadRankStore';
 import { DiamondBadge, GoldBadge } from './BadgeIcons';
 
 interface QuoteCardProps {
   quote: any;
-  index: number;
   diamondQuoteId: string | null;
   goldQuoteId: string | null;
   onAssignBadge: (quoteId: string, badge: 'diamond' | 'gold') => void;
 }
 
-const QuoteCard: React.FC<QuoteCardProps> = ({
+const SortableQuoteCard: React.FC<QuoteCardProps> = ({
   quote,
-  index,
   diamondQuoteId,
   goldQuoteId,
   onAssignBadge,
 }) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: quote.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 10 : 0,
+    opacity: isDragging ? 0.8 : 1,
+  };
+
   const hasDiamond = diamondQuoteId === quote.id;
   const hasGold = goldQuoteId === quote.id;
   const hasBadge = hasDiamond || hasGold;
@@ -28,16 +59,9 @@ const QuoteCard: React.FC<QuoteCardProps> = ({
   const goldDisabled = (goldQuoteId !== null && !hasGold) || hasDiamond;
 
   return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      transition={{
-        layout: { duration: 0.3, ease: [0.25, 0.1, 0.25, 1] },
-        opacity: { duration: 0.2 },
-        delay: index * 0.08,
-      }}
+    <div
+      ref={setNodeRef}
+      style={style}
       className="relative"
     >
       <div
@@ -50,8 +74,29 @@ const QuoteCard: React.FC<QuoteCardProps> = ({
               : 'ring-2 ring-amber-400 shadow-lg shadow-amber-500/20'
             : 'hover:shadow-xl hover:-translate-y-0.5'
           }
+          ${isDragging ? 'shadow-2xl scale-[1.02]' : ''}
         `}
       >
+        {/* Drag Handle */}
+        <div
+          {...attributes}
+          {...listeners}
+          className="absolute -left-2 top-1/2 -translate-y-1/2 -translate-x-full px-2 py-4 cursor-grab active:cursor-grabbing touch-none"
+          aria-label="Drag to reorder"
+        >
+          <svg
+            className="w-5 h-5 text-white/40 hover:text-white/70 transition-colors"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+          >
+            <circle cx="9" cy="6" r="1.5" />
+            <circle cx="15" cy="6" r="1.5" />
+            <circle cx="9" cy="12" r="1.5" />
+            <circle cx="15" cy="12" r="1.5" />
+            <circle cx="9" cy="18" r="1.5" />
+            <circle cx="15" cy="18" r="1.5" />
+          </svg>
+        </div>
         {/* Badge indicator when active - shows in top-left corner */}
         <AnimatePresence>
           {hasBadge && (
@@ -165,7 +210,7 @@ const QuoteCard: React.FC<QuoteCardProps> = ({
           </div>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 };
 
@@ -176,8 +221,31 @@ export const RankingPhase: React.FC = () => {
     assignBadge,
     setPhase,
     setRankedQuotes,
+    reorderAgreedQuotes,
     questionText,
   } = useReadRankStore();
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      const oldIndex = agreedQuotes.findIndex((q) => q.id === active.id);
+      const newIndex = agreedQuotes.findIndex((q) => q.id === over.id);
+      const reordered = arrayMove(agreedQuotes, oldIndex, newIndex);
+      reorderAgreedQuotes(reordered);
+    }
+  };
 
   const handleAssignBadge = (quoteId: string, badge: 'diamond' | 'gold') => {
     assignBadge(quoteId, badge);
@@ -253,21 +321,29 @@ export const RankingPhase: React.FC = () => {
       </motion.div>
 
       {/* Quote Cards */}
-      <div className="max-w-2xl mx-auto">
-        <div className="space-y-4 md:space-y-6">
-          <AnimatePresence>
-            {agreedQuotes.map((quote, index) => (
-              <QuoteCard
-                key={quote.id}
-                quote={quote}
-                index={index}
-                diamondQuoteId={badgeAssignments.diamond}
-                goldQuoteId={badgeAssignments.gold}
-                onAssignBadge={handleAssignBadge}
-              />
-            ))}
-          </AnimatePresence>
-        </div>
+      <div className="max-w-2xl mx-auto pl-8">
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext
+            items={agreedQuotes.map((q) => q.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            <div className="space-y-4 md:space-y-6">
+              {agreedQuotes.map((quote) => (
+                <SortableQuoteCard
+                  key={quote.id}
+                  quote={quote}
+                  diamondQuoteId={badgeAssignments.diamond}
+                  goldQuoteId={badgeAssignments.gold}
+                  onAssignBadge={handleAssignBadge}
+                />
+              ))}
+            </div>
+          </SortableContext>
+        </DndContext>
 
         {agreedQuotes.length === 0 && (
           <motion.div
