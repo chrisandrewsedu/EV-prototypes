@@ -41,6 +41,7 @@
   transition: opacity 0.2s ease, transform 0.15s ease, box-shadow 0.15s ease;
   overflow: hidden;
   border-right: 1px solid rgba(255, 255, 255, 0.3);
+  color: #ffffff;
 }
 
 .icicle-segment:last-child {
@@ -120,54 +121,6 @@
   gap: 6px;
 }
 
-/* Legend for small segments */
-.icicle-legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 12px;
-  padding: 12px;
-  background-color: var(--light-gray, #f5f5f5);
-  border-radius: 6px;
-}
-
-.legend-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.8rem;
-}
-
-.legend-item[style*="pointer"] {
-  cursor: pointer;
-}
-
-.legend-item[style*="pointer"]:hover .legend-name {
-  text-decoration: underline;
-}
-
-.legend-color {
-  width: 12px;
-  height: 12px;
-  border-radius: 3px;
-  flex-shrink: 0;
-}
-
-.legend-name {
-  color: var(--text-dark, #1a1a1a);
-  font-weight: 500;
-}
-
-.legend-amount {
-  color: var(--text-gray, #666);
-  font-weight: 400;
-}
-
-/* Empty state when legend has no items */
-.icicle-legend:empty {
-  display: none;
-}
-
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .icicle-level.ancestor {
@@ -188,15 +141,6 @@
 
   .icicle-level.ancestor .segment-name {
     font-size: 0.65rem;
-  }
-
-  .icicle-legend {
-    gap: 8px;
-    padding: 10px;
-  }
-
-  .legend-item {
-    font-size: 0.75rem;
   }
 }
 

@@ -117,18 +117,6 @@ const BudgetIcicle: React.FC<BudgetIcicleProps> = ({
     }
   };
 
-  // Get text color based on background luminance
-  const getContrastColor = (hexColor: string): string => {
-    if (!hexColor || hexColor.startsWith('var(')) return '#ffffff';
-    const hex = hexColor.replace('#', '');
-    if (hex.length !== 6) return '#ffffff';
-    const r = parseInt(hex.substring(0, 2), 16);
-    const g = parseInt(hex.substring(2, 4), 16);
-    const b = parseInt(hex.substring(4, 6), 16);
-    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-    return luminance > 0.5 ? '#1a1a1a' : '#ffffff';
-  };
-
   // Determine if text can fit in segment
   const canFitText = (width: number, isAncestor: boolean) => {
     // Rough heuristic: need at least 8% width for abbreviated text
@@ -148,7 +136,6 @@ const BudgetIcicle: React.FC<BudgetIcicleProps> = ({
           >
             {level.segments.map((segment) => {
               const isClickable = level.isAncestor || segment.hasChildren;
-              const textColor = getContrastColor(segment.category.color);
               const showText = canFitText(segment.width, level.isAncestor);
 
               return (
@@ -159,7 +146,6 @@ const BudgetIcicle: React.FC<BudgetIcicleProps> = ({
                     width: `${segment.width}%`,
                     backgroundColor: segment.category.color,
                     opacity: level.isAncestor && !segment.isSelected ? 0.4 : 1,
-                    color: textColor,
                   }}
                   onClick={() => isClickable && handleSegmentClick(segment, levelIndex)}
                   role="listitem"
@@ -190,33 +176,6 @@ const BudgetIcicle: React.FC<BudgetIcicleProps> = ({
           </div>
         ))}
       </div>
-
-      {/* Legend for small segments */}
-      {levels.length > 0 && (
-        <div className="icicle-legend">
-          {levels[levels.length - 1].segments
-            .filter(s => !canFitText(s.width, false))
-            .map(segment => (
-              <div
-                key={segment.category.name}
-                className="legend-item"
-                onClick={() => {
-                  if (segment.hasChildren) {
-                    handleSegmentClick(segment, levels.length - 1);
-                  }
-                }}
-                style={{ cursor: segment.hasChildren ? 'pointer' : 'default' }}
-              >
-                <span
-                  className="legend-color"
-                  style={{ backgroundColor: segment.category.color }}
-                />
-                <span className="legend-name">{segment.category.name}</span>
-                <span className="legend-amount">{formatCurrency(segment.category.amount)}</span>
-              </div>
-            ))}
-        </div>
-      )}
     </div>
   );
 };
