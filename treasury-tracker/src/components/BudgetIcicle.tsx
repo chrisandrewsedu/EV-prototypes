@@ -146,7 +146,7 @@ const BudgetIcicle: React.FC<BudgetIcicleProps> = ({
             role="list"
             aria-label={`${level.levelName} breakdown`}
           >
-            {level.segments.map((segment, segmentIndex) => {
+            {level.segments.map((segment) => {
               const isClickable = level.isAncestor || segment.hasChildren;
               const textColor = getContrastColor(segment.category.color);
               const showText = canFitText(segment.width, level.isAncestor);

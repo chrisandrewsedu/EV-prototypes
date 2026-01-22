@@ -3,10 +3,10 @@ import * as d3 from 'd3';
 import type { BudgetCategory } from '../types/budget';
 import './BudgetSunburst.css';
 
-// Target angle for selected category (bottom-right, ~135 degrees from top)
+// Target angle for selected category (right side, 90 degrees from top)
 // In D3's coordinate system, 0 is at top, going clockwise
-// 135 degrees = bottom-right diagonal (between bottom and right)
-const TARGET_ANGLE = (135 * Math.PI) / 180;
+// 90 degrees = directly to the right
+const TARGET_ANGLE = (90 * Math.PI) / 180;
 
 interface BudgetSunburstProps {
   categories: BudgetCategory[];
@@ -92,13 +92,19 @@ const BudgetSunburst: React.FC<BudgetSunburstProps> = ({
     d3.select(svgRef.current).selectAll('*').remove();
 
     const containerWidth = containerRef.current.clientWidth;
-    const size = Math.min(containerWidth, 500);
+    // Use a larger base size for the sunburst
+    const size = Math.min(containerWidth, 900);
     const radius = size / 2;
+
+    // Display dimensions - show the full width but crop height aggressively
+    // Since selection rotates to 90 degrees (right), we show a horizontal band
+    const displayHeight = size * 0.45; // Show 45% of the height (crops top and bottom significantly)
+    const cropTop = (size - displayHeight) / 2; // Center the crop vertically
 
     const svg = d3.select(svgRef.current)
       .attr('width', size)
-      .attr('height', size)
-      .attr('viewBox', `${-size / 2} ${-size / 2} ${size} ${size}`)
+      .attr('height', displayHeight)
+      .attr('viewBox', `${-size / 2} ${-size / 2 + cropTop} ${size} ${displayHeight}`)
       .style('font-family', 'Manrope, sans-serif');
 
     // Create a group for rotatable content (arcs only, not center)
@@ -420,9 +426,12 @@ const BudgetSunburst: React.FC<BudgetSunburstProps> = ({
 
       const calloutBox = containerRef.current?.querySelector('.sunburst-callout') as HTMLElement;
       if (calloutBox) {
-        const containerCenter = size / 2;
-        const boxX = containerCenter + lineEndX;
-        const boxY = containerCenter + lineEndY;
+        // Map SVG coordinates to container coordinates, accounting for viewBox crop
+        // The center of the sunburst (0,0 in SVG) maps to (size/2, displayHeight/2) in container
+        const centerX = size / 2;
+        const centerY = displayHeight / 2;
+        const boxX = centerX + lineEndX;
+        const boxY = centerY + lineEndY;
 
         // Delay showing the callout box until after rotation
         calloutBox.style.opacity = '0';
