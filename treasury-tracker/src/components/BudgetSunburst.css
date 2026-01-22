@@ -54,6 +54,13 @@
   opacity: 0.85;
 }
 
+.sunburst-tooltip .tooltip-hint {
+  font-size: 0.75rem;
+  opacity: 0.7;
+  margin-top: 0.5rem;
+  font-style: italic;
+}
+
 /* Callout Box - positioned dynamically via JS */
 .sunburst-callout {
   position: absolute;
@@ -66,19 +73,15 @@
   max-width: 220px;
   z-index: 10;
   transform: translateY(-50%);
-  animation: calloutFadeIn 0.2s ease-out;
+  transition: opacity 0.2s ease-out;
 }
 
-@keyframes calloutFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-50%) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(-50%) scale(1);
-  }
+/* Rotation animation for the sunburst arcs */
+.sunburst-rotatable {
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+/* calloutFadeIn animation removed - using JS-controlled opacity transition */
 
 .sunburst-callout.right-side {
   border-left: 4px solid #FF5740;

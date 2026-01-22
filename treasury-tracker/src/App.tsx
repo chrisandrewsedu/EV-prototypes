@@ -5,7 +5,7 @@ import NavigationTabs from './components/NavigationTabs';
 import SearchBar from './components/SearchBar';
 import YearSelector from './components/YearSelector';
 import Breadcrumb from './components/Breadcrumb';
-import BudgetSunburst from './components/BudgetSunburst';
+import BudgetVisualization from './components/BudgetVisualization';
 import CategoryList from './components/CategoryList';
 import LineItemsTable from './components/LineItemsTable';
 import LinkedTransactionsPanel from './components/LinkedTransactionsPanel';
@@ -410,11 +410,11 @@ function App() {
           {showLineItems ? (
             // At the lowest level
             <>
-              {/* For Money Out, show sunburst + transactions instead of line items */}
+              {/* For Money Out, show visualization + transactions instead of line items */}
               {activeDataset === 'operating' ? (
                 <>
-                  {/* Sunburst visualization at lowest level too */}
-                  <BudgetSunburst
+                  {/* Budget visualization at lowest level too */}
+                  <BudgetVisualization
                     categories={budgetData.categories}
                     navigationPath={navigationPath}
                     totalBudget={budgetData.metadata.totalBudget}
@@ -441,8 +441,8 @@ function App() {
             </>
           ) : displayCategories.length > 0 ? (
             <>
-              {/* Sunburst visualization - shows full hierarchy with current selection highlighted */}
-              <BudgetSunburst
+              {/* Budget visualization - shows full hierarchy with current selection highlighted */}
+              <BudgetVisualization
                 categories={budgetData.categories}
                 navigationPath={navigationPath}
                 totalBudget={budgetData.metadata.totalBudget}
