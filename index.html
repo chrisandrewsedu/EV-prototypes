@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Feature Prototypes</title>
+    <title>Empowered Vote — Features</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&display=swap" rel="stylesheet">
@@ -92,6 +92,31 @@
             font-weight: 400;
         }
 
+        .feature-card.live::before {
+            background: #00657c;
+        }
+
+        .badge {
+            display: inline-block;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            padding: 0.25rem 0.6rem;
+            border-radius: 20px;
+            margin-bottom: 0.75rem;
+        }
+
+        .badge-live {
+            background: #e6f7f9;
+            color: #00657c;
+        }
+
+        .badge-prototype {
+            background: #fff0ee;
+            color: #ff5740;
+        }
+
         .feature-arrow {
             display: inline-block;
             margin-left: 0.5rem;
@@ -121,10 +146,33 @@
 </head>
 <body>
     <div class="container">
-        <h1>Feature Prototypes</h1>
+        <h1>Empowered Vote Features</h1>
         
         <div class="features-grid">
+            <a href="https://compass.empowered.vote" target="_blank" class="feature-card live">
+                <div class="badge badge-live">Live</div>
+                <div class="feature-title">
+                    Compass
+                    <span class="feature-arrow">→</span>
+                </div>
+                <p class="feature-description">
+                    Calibrate your political compass by ranking your stance on key issues, then see how you compare to politicians
+                </p>
+            </a>
+
+            <a href="https://essentials.empowered.vote" target="_blank" class="feature-card live">
+                <div class="badge badge-live">Live</div>
+                <div class="feature-title">
+                    Essentials
+                    <span class="feature-arrow">→</span>
+                </div>
+                <p class="feature-description">
+                    View your elected officials and compare their positions side by side with your own compass
+                </p>
+            </a>
+
             <a href="read-rank/dist/" class="feature-card">
+                <div class="badge badge-prototype">Prototype</div>
                 <div class="feature-title">
                     Read & Rank
                     <span class="feature-arrow">→</span>
@@ -135,16 +183,18 @@
             </a>
 
             <a href="treasury-tracker/dist/" class="feature-card">
+                <div class="badge badge-prototype">Prototype</div>
                 <div class="feature-title">
-                Treasury Tracker
-                <span class="feature-arrow">→</span>
+                    Treasury Tracker
+                    <span class="feature-arrow">→</span>
                 </div>
                 <p class="feature-description">
                     Track and manage treasury data
                 </p>
-           </a>
+            </a>
 
             <a href="empowered-badges/dist/" class="feature-card">
+                <div class="badge badge-prototype">Prototype</div>
                 <div class="feature-title">
                     Empowered Badges
                     <span class="feature-arrow">→</span>
@@ -155,6 +205,7 @@
             </a>
 
             <a href="data-entry/dist/" class="feature-card">
+                <div class="badge badge-prototype">Prototype</div>
                 <div class="feature-title">
                     Stance Data Entry
                     <span class="feature-arrow">→</span>
