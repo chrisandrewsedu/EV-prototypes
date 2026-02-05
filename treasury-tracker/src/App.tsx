@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback, useEffect } from 'react'
+import { SiteHeader } from '@chrisandrewsedu/ev-ui';
 import { ArrowLeft } from 'lucide-react';
 import DatasetTabs from './components/datasets/DatasetTabs';
 import NavigationTabs from './components/NavigationTabs';
@@ -259,6 +260,7 @@ function App() {
 
   return (
     <div className="app">
+      <SiteHeader logoSrc={`${import.meta.env.BASE_URL}EVLogo.svg`} />
       <div className="header">
         <div className="header-content">
           {/* City/State/Federal tabs and controls */}

@@ -41,7 +41,7 @@ export const ProgressHeader: React.FC = () => {
   const isInHub = phase === 'hub';
 
   return (
-    <header className="bg-ev-white border-b border-gray-200 sticky top-0 z-50">
+    <div className="bg-ev-white border-b border-gray-200">
       <div className="container mx-auto px-4 py-2 md:py-4 max-w-4xl">
         {/* Top Row: Back button, Main Title, Reset */}
         <div className="flex items-center justify-between mb-2 md:mb-3">
@@ -121,6 +121,6 @@ export const ProgressHeader: React.FC = () => {
           </>
         )}
       </div>
-    </header>
+    </div>
   );
 };
