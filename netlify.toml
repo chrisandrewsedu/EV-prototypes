@@ -2,9 +2,18 @@
 [build]
   # Publish the root directory which contains index.html and subdirectories
   publish = "."
-  
-  # Build script that will build both projects
-  command = "npm run build:all"
+
+  # Build script that clones and builds ev-ui, then builds all projects
+  command = '''
+    echo "Cloning ev-ui..."
+    git clone https://github.com/chrisandrewsedu/ev-ui.git ../ev-ui
+    cd ../ev-ui
+    npm install
+    npm run build
+    cd /opt/build/repo
+    echo "Building prototypes..."
+    npm run build:all
+  '''
 
 # Redirect rules for each project to handle SPA routing
 [[redirects]]
