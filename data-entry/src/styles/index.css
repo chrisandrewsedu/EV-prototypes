@@ -246,11 +246,35 @@ button:disabled, .btn-primary:disabled, .btn-secondary:disabled {
   box-shadow: 0 0 0 3px var(--teal-light);
 }
 
-.login-card button {
+.login-card button[type="submit"] {
   background: var(--teal);
   color: var(--white);
   padding: 12px;
   font-size: 1rem;
+}
+
+.login-toggle {
+  background: none;
+  border: none;
+  color: var(--teal);
+  cursor: pointer;
+  font-size: 0.875rem;
+  margin-top: 16px;
+  padding: 0;
+}
+
+.login-toggle:hover {
+  text-decoration: underline;
+}
+
+.login-error {
+  background: var(--red-light);
+  color: var(--red);
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  font-size: 0.875rem;
+  margin-bottom: 8px;
+  text-align: left;
 }
 
 /* Mode Selector */

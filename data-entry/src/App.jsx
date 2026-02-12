@@ -1,7 +1,7 @@
 import { Routes, Route } from 'react-router-dom'
-import { useVolunteer } from './context/VolunteerContext'
+import { useAuth } from './context/AuthContext'
 import Header from './components/Header'
-import VolunteerLogin from './components/VolunteerLogin'
+import LoginPage from './components/LoginPage'
 import ModeSelector from './components/ModeSelector'
 import AddDashboard from './components/AddMode/AddDashboard'
 import WorkQueue from './components/AddMode/WorkQueue'
@@ -13,10 +13,14 @@ import PoliticianList from './components/ManageMode/PoliticianList'
 import AddPoliticianForm from './components/ManageMode/AddPoliticianForm'
 
 function App() {
-  const { volunteerName } = useVolunteer()
+  const { user, loading } = useAuth()
 
-  if (!volunteerName) {
-    return <VolunteerLogin />
+  if (loading) {
+    return <div className="loading">Checking session...</div>
+  }
+
+  if (!user) {
+    return <LoginPage />
   }
 
   return (

@@ -223,7 +223,7 @@ export async function getReviewQueue(): Promise<StagingStance[]> {
 /**
  * Check if user is authenticated
  */
-export async function checkAuth(): Promise<{ user_id: string; role: string } | null> {
+export async function checkAuth(): Promise<{ user_id: string; username: string; completed_onboarding: boolean } | null> {
   try {
     const response = await fetch(`${API_BASE}/auth/me`, {
       credentials: 'include',
@@ -235,6 +235,19 @@ export async function checkAuth(): Promise<{ user_id: string; role: string } | n
   } catch {
     return null;
   }
+}
+
+/**
+ * Register a new account
+ */
+export async function register(
+  username: string,
+  password: string
+): Promise<{ user_id: string }> {
+  return fetchAPI<{ user_id: string }>('/auth/register', {
+    method: 'POST',
+    body: JSON.stringify({ username, password }),
+  });
 }
 
 /**

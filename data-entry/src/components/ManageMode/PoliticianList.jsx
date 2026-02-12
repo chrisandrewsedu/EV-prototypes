@@ -1,20 +1,22 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { getData } from '../../api/sheets'
+import { useAuth } from '../../context/AuthContext'
 
 const OFFICE_LEVEL_LABELS = {
   federal: 'Federal',
   state: 'State',
+  local: 'Local',
   municipal: 'Municipal',
   school_district: 'School District'
 }
 
 function PoliticianList() {
+  const { user } = useAuth()
   const [politicians, setPoliticians] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [searchTerm, setSearchTerm] = useState('')
-  const [filterParty, setFilterParty] = useState('')
   const [filterOffice, setFilterOffice] = useState('')
   const [filterLevel, setFilterLevel] = useState('')
   const [filterState, setFilterState] = useState('')
@@ -36,22 +38,20 @@ function PoliticianList() {
     }
   }
 
-  const parties = [...new Set(politicians.map(p => p.party).filter(Boolean))].sort()
   const offices = [...new Set(politicians.map(p => p.office).filter(Boolean))].sort()
   const levels = [...new Set(politicians.map(p => p.office_level).filter(Boolean))].sort()
   const states = [...new Set(politicians.map(p => p.state).filter(Boolean))].sort()
 
   const filteredPoliticians = politicians.filter(p => {
     const matchesSearch = !searchTerm ||
-      p.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (p.full_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       (p.district && p.district.toLowerCase().includes(searchTerm.toLowerCase()))
 
-    const matchesParty = !filterParty || p.party === filterParty
     const matchesOffice = !filterOffice || p.office === filterOffice
     const matchesLevel = !filterLevel || p.office_level === filterLevel
     const matchesState = !filterState || p.state === filterState
 
-    return matchesSearch && matchesParty && matchesOffice && matchesLevel && matchesState
+    return matchesSearch && matchesOffice && matchesLevel && matchesState
   })
 
   // Format the location display
@@ -93,15 +93,6 @@ function PoliticianList() {
         </div>
         <div className="filter-row">
           <select
-            value={filterParty}
-            onChange={(e) => setFilterParty(e.target.value)}
-          >
-            <option value="">All Parties</option>
-            {parties.map(party => (
-              <option key={party} value={party}>{party}</option>
-            ))}
-          </select>
-          <select
             value={filterLevel}
             onChange={(e) => setFilterLevel(e.target.value)}
           >
@@ -137,7 +128,7 @@ function PoliticianList() {
 
       {filteredPoliticians.length === 0 ? (
         <div className="empty-state">
-          {searchTerm || filterParty || filterOffice || filterLevel || filterState
+          {searchTerm || filterOffice || filterLevel || filterState
             ? 'No politicians match your filters.'
             : 'No politicians added yet.'}
         </div>
@@ -148,7 +139,6 @@ function PoliticianList() {
               <div className="politician-info">
                 <h3>{politician.full_name}</h3>
                 <p className="politician-meta">
-                  {politician.party && <span className="party">{politician.party}</span>}
                   {politician.office && <span className="office">{politician.office}</span>}
                   {(politician.state || politician.district) && (
                     <span className="location">{formatLocation(politician)}</span>
@@ -157,7 +147,7 @@ function PoliticianList() {
               </div>
               {politician.added_by && (
                 <div className="added-by">
-                  Added by {politician.added_by}
+                  {politician.added_by === user.user_id ? 'Added by you' : 'Added by volunteer'}
                 </div>
               )}
             </div>

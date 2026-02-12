@@ -1,17 +1,17 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { getData } from '../../api/sheets'
-import { useVolunteer } from '../../context/VolunteerContext'
+import { useAuth } from '../../context/AuthContext'
 
 function AddDashboard() {
-  const { volunteerName } = useVolunteer()
+  const { user } = useAuth()
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
   useEffect(() => {
     loadStats()
-  }, [volunteerName])
+  }, [user.user_id])
 
   const loadStats = async () => {
     try {
@@ -20,10 +20,10 @@ function AddDashboard() {
       const data = await getData()
 
       // Calculate stats
-      const myDrafts = data.stances.filter(s => s.added_by === volunteerName && s.status === 'draft').length
+      const myDrafts = data.stances.filter(s => s.added_by === user.user_id && s.status === 'draft').length
       const needsReview = data.stances.filter(s => s.status === 'needs_review').length
       const approved = data.stances.filter(s => s.status === 'approved').length
-      const totalPossible = data.politicians.length * data.issues.length
+      const totalPossible = data.politicians.length * data.topics.length
       const totalEntered = data.stances.length
 
       setStats({

@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { addPolitician } from '../../api/sheets'
-import { useVolunteer } from '../../context/VolunteerContext'
 
 const PARTIES = [
   'Democrat',
@@ -91,7 +90,6 @@ const STATES = [
 
 function AddPoliticianForm() {
   const navigate = useNavigate()
-  const { volunteerName } = useVolunteer()
 
   const [fullName, setFullName] = useState('')
   const [party, setParty] = useState('')
@@ -147,8 +145,7 @@ function AddPoliticianForm() {
         office: finalOffice,
         office_level: officeLevel,
         state: state,
-        district: district.trim(),
-        added_by: volunteerName
+        district: district.trim()
       })
 
       navigate('/manage')

@@ -122,13 +122,16 @@ const BudgetSunburst: React.FC<BudgetSunburstProps> = ({
 
     const partitionedRoot = partition(root);
 
-    // Arc generator
+    // Center circle radius (defined early so arcs can respect it)
+    const centerRadius = radius * 0.22;
+
+    // Arc generator - innerRadius uses Math.max to prevent overlapping the center circle
     const arc = d3.arc<PartitionNode>()
       .startAngle(d => d.x0)
       .endAngle(d => d.x1)
       .padAngle(d => Math.min((d.x1 - d.x0) / 2, 0.005))
       .padRadius(radius / 2)
-      .innerRadius(d => d.y0)
+      .innerRadius(d => Math.max(d.y0, centerRadius + 2))
       .outerRadius(d => d.y1 - 1);
 
     // Build the path from root to a node (excluding root) - returns names
@@ -341,7 +344,6 @@ const BudgetSunburst: React.FC<BudgetSunburstProps> = ({
       });
 
     // Add center circle - always shows total budget
-    const centerRadius = partitionedRoot.y0 || radius * 0.15;
     svg.append('circle')
       .attr('r', centerRadius)
       .attr('fill', 'var(--muted-blue)')

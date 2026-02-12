@@ -21,4 +21,5 @@ export {
   checkAuth,
   login,
   logout,
+  register,
 } from './backend';

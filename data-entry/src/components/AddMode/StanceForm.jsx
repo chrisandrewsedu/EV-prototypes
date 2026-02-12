@@ -1,38 +1,39 @@
 import { useState, useEffect } from 'react'
 import { useParams, useLocation, useNavigate, Link } from 'react-router-dom'
 import { getData, addStance, updateStance, submitForReview, acquireLock, releaseLock } from '../../api/sheets'
-import { useVolunteer } from '../../context/VolunteerContext'
+import { useAuth } from '../../context/AuthContext'
 
 function StanceForm() {
   const { politicianId, topicKey } = useParams()
   const location = useLocation()
   const navigate = useNavigate()
-  const { volunteerName } = useVolunteer()
+  const { user } = useAuth()
 
   const [politician, setPolitician] = useState(location.state?.politician || null)
-  const [issue, setIssue] = useState(location.state?.issue || null)
+  const [topic, setTopic] = useState(location.state?.topic || null)
   const [existingStance, setExistingStance] = useState(location.state?.stance || null)
 
-  const [stance, setStance] = useState(existingStance?.stance || '')
+  const [selectedValue, setSelectedValue] = useState(existingStance?.value || '')
   const [reasoning, setReasoning] = useState(existingStance?.reasoning || '')
-  const [sources, setSources] = useState(existingStance?.sources || '')
+  const [sources, setSources] = useState(
+    Array.isArray(existingStance?.sources) ? existingStance.sources.join('; ') : (existingStance?.sources || '')
+  )
 
-  const [loading, setLoading] = useState(!location.state?.issue)
+  const [loading, setLoading] = useState(!location.state?.topic)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(null)
   const [lockError, setLockError] = useState(null)
 
   useEffect(() => {
-    if (!location.state?.issue) {
+    if (!location.state?.topic) {
       loadData()
-    } else if (existingStance?.context_key) {
+    } else if (existingStance?.id) {
       tryAcquireLock()
     }
 
     return () => {
-      // Release lock on unmount
-      if (existingStance?.context_key) {
-        releaseLock(existingStance.context_key).catch(() => {})
+      if (existingStance?.id) {
+        releaseLock(existingStance.id).catch(() => {})
       }
     }
   }, [])
@@ -43,16 +44,13 @@ function StanceForm() {
       setError(null)
       const data = await getData()
 
-      // Find politician
       const foundPolitician = data.politicians.find(p => {
-        const id = p.external_id || `new_${p.full_name.toLowerCase().replace(/[^a-z0-9]/g, '')}_${p._rowIndex}`
+        const id = p.external_id || `new_${p.full_name.toLowerCase().replace(/[^a-z0-9]/g, '')}_${p.id}`
         return id === politicianId || decodeURIComponent(politicianId) === id
       })
 
-      // Find issue
-      const foundIssue = data.issues.find(i => i.topic_key === topicKey)
+      const foundTopic = data.topics.find(t => t.topic_key === topicKey)
 
-      // Find existing stance
       const foundStance = data.stances.find(s =>
         s.topic_key === topicKey &&
         (s.politician_external_id === (foundPolitician?.external_id || politicianId) ||
@@ -60,19 +58,19 @@ function StanceForm() {
       )
 
       setPolitician(foundPolitician)
-      setIssue(foundIssue)
+      setTopic(foundTopic)
       setExistingStance(foundStance)
 
       if (foundStance) {
-        setStance(foundStance.stance)
+        setSelectedValue(foundStance.value)
         setReasoning(foundStance.reasoning)
-        setSources(foundStance.sources)
+        setSources(Array.isArray(foundStance.sources) ? foundStance.sources.join('; ') : (foundStance.sources || ''))
 
-        // Try to acquire lock
-        if (foundStance.context_key) {
-          const lockResult = await acquireLock(foundStance.context_key, volunteerName)
-          if (!lockResult.success && lockResult.locked) {
-            setLockError(lockResult.message)
+        if (foundStance.id) {
+          try {
+            await acquireLock(foundStance.id)
+          } catch (err) {
+            setLockError(err.message)
           }
         }
       }
@@ -85,17 +83,21 @@ function StanceForm() {
 
   const tryAcquireLock = async () => {
     try {
-      const lockResult = await acquireLock(existingStance.context_key, volunteerName)
-      if (!lockResult.success && lockResult.locked) {
-        setLockError(lockResult.message)
-      }
+      await acquireLock(existingStance.id)
     } catch (err) {
-      console.error('Failed to acquire lock:', err)
+      setLockError(err.message)
     }
   }
 
+  const parseSources = () => {
+    return sources
+      .split(';')
+      .map(s => s.trim())
+      .filter(Boolean)
+  }
+
   const handleSaveDraft = async () => {
-    if (!stance) {
+    if (!selectedValue) {
       setError('Please select a stance')
       return
     }
@@ -104,22 +106,20 @@ function StanceForm() {
       setSaving(true)
       setError(null)
 
-      if (existingStance?.context_key) {
-        await updateStance({
-          context_key: existingStance.context_key,
-          stance,
+      if (existingStance?.id) {
+        await updateStance(existingStance.id, {
+          value: selectedValue,
           reasoning,
-          sources
+          sources: parseSources()
         })
       } else {
         await addStance({
           politician_name: politician.full_name,
-          politician_external_id: politician.external_id || '',
-          topic_key: issue.topic_key,
-          stance,
+          politician_external_id: politician.external_id || undefined,
+          topic_key: topic.topic_key,
+          value: selectedValue,
           reasoning,
-          sources,
-          added_by: volunteerName
+          sources: parseSources()
         })
       }
 
@@ -132,7 +132,7 @@ function StanceForm() {
   }
 
   const handleSubmitForReview = async () => {
-    if (!stance) {
+    if (!selectedValue) {
       setError('Please select a stance')
       return
     }
@@ -141,27 +141,25 @@ function StanceForm() {
       setSaving(true)
       setError(null)
 
-      if (existingStance?.context_key) {
-        await updateStance({
-          context_key: existingStance.context_key,
-          stance,
+      if (existingStance?.id) {
+        await updateStance(existingStance.id, {
+          value: selectedValue,
           reasoning,
-          sources
+          sources: parseSources()
         })
-        await submitForReview(existingStance.context_key)
+        await submitForReview(existingStance.id)
       } else {
         const result = await addStance({
           politician_name: politician.full_name,
-          politician_external_id: politician.external_id || '',
-          topic_key: issue.topic_key,
-          stance,
+          politician_external_id: politician.external_id || undefined,
+          topic_key: topic.topic_key,
+          value: selectedValue,
           reasoning,
-          sources,
-          added_by: volunteerName
+          sources: parseSources()
         })
 
-        if (result.context_key) {
-          await submitForReview(result.context_key)
+        if (result.id) {
+          await submitForReview(result.id)
         }
       }
 
@@ -177,24 +175,21 @@ function StanceForm() {
     return <div className="loading">Loading...</div>
   }
 
-  if (!politician || !issue) {
+  if (!politician || !topic) {
     return (
       <div className="error-container">
-        <p className="error">Politician or issue not found</p>
+        <p className="error">Politician or topic not found</p>
         <Link to="/add/queue" className="btn-secondary">Back to Queue</Link>
       </div>
     )
   }
 
-  const stanceOptions = [
-    { value: 1, text: issue.stance1 },
-    { value: 2, text: issue.stance2 },
-    { value: 3, text: issue.stance3 },
-    { value: 4, text: issue.stance4 },
-    { value: 5, text: issue.stance5 }
-  ].filter(opt => opt.text)
+  const stanceOptions = (topic.stances || []).map(s => ({
+    value: s.value,
+    text: s.text
+  }))
 
-  const canEdit = !existingStance || existingStance.status === 'draft' || existingStance.added_by === volunteerName
+  const canEdit = !existingStance || existingStance.status === 'draft' || existingStance.added_by === user.user_id
   const isLocked = lockError !== null
 
   return (
@@ -202,7 +197,7 @@ function StanceForm() {
       <div className="page-header">
         <div>
           <h1>{politician.full_name}</h1>
-          <p className="issue-title">{issue.title}</p>
+          <p className="issue-title">{topic.title}</p>
         </div>
         <Link to={`/add/politician/${encodeURIComponent(politicianId)}`} className="btn-secondary">
           Back to Issues
@@ -222,20 +217,20 @@ function StanceForm() {
       )}
 
       <div className="form-content">
-        {issue.startPhrase && (
-          <p className="start-phrase">{issue.startPhrase}</p>
+        {topic.start_phrase && (
+          <p className="start-phrase">{topic.start_phrase}</p>
         )}
 
         <div className="stance-selector">
           <label>Select Stance</label>
           {stanceOptions.map(opt => (
-            <label key={opt.value} className={`stance-option ${stance == opt.value ? 'selected' : ''}`}>
+            <label key={opt.value} className={`stance-option ${selectedValue == opt.value ? 'selected' : ''}`}>
               <input
                 type="radio"
                 name="stance"
                 value={opt.value}
-                checked={stance == opt.value}
-                onChange={(e) => setStance(Number(e.target.value))}
+                checked={selectedValue == opt.value}
+                onChange={(e) => setSelectedValue(Number(e.target.value))}
                 disabled={isLocked && !canEdit}
               />
               <span className="stance-number">{opt.value}</span>

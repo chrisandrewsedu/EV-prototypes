@@ -1,19 +1,19 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { getData } from '../../api/sheets'
-import { useVolunteer } from '../../context/VolunteerContext'
+import { useAuth } from '../../context/AuthContext'
 import { LOCK_TIMEOUT_MS } from '../../config'
 
 function ReviewQueue() {
-  const { volunteerName } = useVolunteer()
+  const { user } = useAuth()
   const [reviewableStances, setReviewableStances] = useState([])
-  const [issues, setIssues] = useState([])
+  const [topics, setTopics] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
   useEffect(() => {
     loadData()
-  }, [volunteerName])
+  }, [user.user_id])
 
   const loadData = async () => {
     try {
@@ -21,7 +21,7 @@ function ReviewQueue() {
       setError(null)
       const data = await getData()
 
-      setIssues(data.issues)
+      setTopics(data.topics)
 
       // Filter for reviewable stances
       const now = Date.now()
@@ -30,14 +30,14 @@ function ReviewQueue() {
         if (stance.status !== 'needs_review') return false
 
         // Can't review your own work
-        if (stance.added_by === volunteerName) return false
+        if (stance.added_by === user.user_id) return false
 
-        // Can't review if already reviewed
-        const reviewedBy = stance.reviewed_by ? stance.reviewed_by.split(',') : []
-        if (reviewedBy.includes(volunteerName)) return false
+        // Can't review if already reviewed (reviewed_by is an array from backend)
+        const reviewedBy = Array.isArray(stance.reviewed_by) ? stance.reviewed_by : []
+        if (reviewedBy.includes(user.user_id)) return false
 
         // Check if locked by someone else
-        if (stance.locked_by && stance.locked_by !== volunteerName) {
+        if (stance.locked_by && stance.locked_by !== user.user_id) {
           const lockTime = new Date(stance.locked_at).getTime()
           if (now - lockTime < LOCK_TIMEOUT_MS) {
             return false // Locked by someone else
@@ -55,9 +55,9 @@ function ReviewQueue() {
     }
   }
 
-  const getIssueTitle = (topicKey) => {
-    const issue = issues.find(i => i.topic_key === topicKey)
-    return issue ? (issue.shortTitle || issue.title) : topicKey
+  const getTopicTitle = (topicKey) => {
+    const topic = topics.find(t => t.topic_key === topicKey)
+    return topic ? (topic.short_title || topic.title) : topicKey
   }
 
   if (loading) {
@@ -100,11 +100,11 @@ function ReviewQueue() {
                 key={stance.context_key}
                 to={`/review/${encodeURIComponent(stance.context_key)}`}
                 className="review-card"
-                state={{ stance, issue: issues.find(i => i.topic_key === stance.topic_key) }}
+                state={{ stance, topic: topics.find(t => t.topic_key === stance.topic_key) }}
               >
                 <div className="review-info">
                   <h3>{stance.politician_name}</h3>
-                  <p className="review-issue">{getIssueTitle(stance.topic_key)}</p>
+                  <p className="review-issue">{getTopicTitle(stance.topic_key)}</p>
                 </div>
                 <div className="review-meta">
                   <span className="author">by {stance.added_by}</span>
