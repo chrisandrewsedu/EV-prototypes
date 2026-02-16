@@ -1,0 +1,1162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The $50,000 Question</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,700;0,9..144,900;1,9..144,400&family=Source+Sans+3:wght@300;400;600&display=swap');
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #faf7f2;
+  --text: #2c2416;
+  --accent: #c45d3e;
+  --accent-light: #f4e0d8;
+  --green: #3a8a5c;
+  --green-light: #d4edde;
+  --blue: #3a6b8a;
+  --blue-light: #d4e4ed;
+  --purple: #7a5e8a;
+  --purple-light: #e8ddef;
+  --muted: #8a7e6e;
+  --border: #e0d8cc;
+  --card: #fff;
+  --gold: #b8960c;
+  --gold-light: #faf3d8;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Source Sans 3', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.7;
+  font-size: 18px;
+  -webkit-font-smoothing: antialiased;
+}
+
+.container {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.hero {
+  text-align: center;
+  padding: 80px 24px 40px;
+}
+.hero-label {
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 16px;
+}
+.hero h1 {
+  font-family: 'Fraunces', serif;
+  font-size: clamp(2.4rem, 6vw, 3.6rem);
+  font-weight: 900;
+  line-height: 1.15;
+  margin-bottom: 20px;
+}
+.hero .subtitle {
+  font-size: 1.15rem;
+  color: var(--muted);
+  max-width: 520px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+section { padding: 48px 0; }
+h2 { font-family: 'Fraunces', serif; font-size: 1.7rem; font-weight: 700; margin-bottom: 20px; line-height: 1.3; }
+p { margin-bottom: 18px; }
+strong { font-weight: 600; }
+a { color: var(--blue); text-decoration-color: rgba(58,107,138,0.3); text-underline-offset: 3px; }
+a:hover { text-decoration-color: var(--blue); }
+
+.highlight { background: var(--accent-light); padding: 2px 6px; border-radius: 3px; font-weight: 600; }
+.highlight-green { background: var(--green-light); padding: 2px 6px; border-radius: 3px; font-weight: 600; }
+.highlight-purple { background: var(--purple-light); padding: 2px 6px; border-radius: 3px; font-weight: 600; }
+
+hr { border: none; height: 1px; background: var(--border); margin: 48px 0; }
+
+/* ===== INTERACTIVE CARDS ===== */
+.interactive {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 28px;
+  margin: 28px 0;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+}
+.interactive-label {
+  font-size: 12px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--accent); margin-bottom: 16px; display: flex; align-items: center; gap: 6px;
+}
+.interactive-label::before { content: '▶'; font-size: 9px; }
+.interactive h3 { font-family: 'Fraunces', serif; font-size: 1.15rem; margin-bottom: 14px; font-weight: 700; }
+
+/* ===== CHALLENGE CARDS ===== */
+.challenge {
+  background: var(--card);
+  border: 2px solid var(--gold);
+  border-radius: 12px;
+  padding: 28px;
+  margin: 28px 0;
+  box-shadow: 0 2px 16px rgba(184,150,12,0.1);
+  position: relative;
+}
+.challenge-label {
+  font-size: 12px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--gold); margin-bottom: 16px; display: flex; align-items: center; gap: 6px;
+}
+.challenge-label::before { content: '★'; font-size: 11px; }
+.challenge h3 { font-family: 'Fraunces', serif; font-size: 1.15rem; margin-bottom: 6px; font-weight: 700; }
+.challenge-prompt {
+  font-size: 0.95rem; color: var(--muted); margin-bottom: 18px; font-style: italic;
+}
+.challenge-success {
+  display: none;
+  background: var(--gold-light);
+  border: 1px solid var(--gold);
+  border-radius: 8px;
+  padding: 14px 18px;
+  margin-top: 16px;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+.challenge-success.show { display: block; animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+@keyframes popIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+.challenge-success .success-icon { font-size: 1.3rem; margin-right: 6px; }
+
+/* ===== BADGE TRACKER ===== */
+.badge-tracker {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 18px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.3s;
+  max-width: 320px;
+}
+.badge-tracker.complete {
+  border-color: var(--gold);
+  background: var(--gold-light);
+  box-shadow: 0 4px 24px rgba(184,150,12,0.25);
+}
+.badge-dots {
+  display: flex;
+  gap: 6px;
+}
+.badge-dot {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: #e0d8cc;
+  transition: all 0.4s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  color: transparent;
+}
+.badge-dot.earned {
+  background: var(--gold);
+  color: white;
+  animation: dotPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes dotPop { 0% { transform: scale(1); } 50% { transform: scale(1.4); } 100% { transform: scale(1); } }
+.badge-label {
+  font-size: 0.8rem;
+  color: var(--muted);
+  font-weight: 600;
+  line-height: 1.3;
+}
+.badge-tracker.complete .badge-label { color: var(--gold); }
+
+/* ===== SLIDERS ===== */
+.slider-row { display: flex; align-items: center; gap: 16px; margin: 16px 0; }
+.slider-row label { font-size: 0.9rem; font-weight: 600; min-width: 140px; color: var(--muted); }
+.slider-row input[type="range"] {
+  flex: 1; height: 6px; -webkit-appearance: none; appearance: none;
+  background: var(--border); border-radius: 3px; outline: none;
+}
+.slider-row input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none; width: 22px; height: 22px; border-radius: 50%;
+  background: var(--accent); cursor: pointer; box-shadow: 0 2px 6px rgba(196,93,62,0.3);
+}
+.slider-row input[type="range"].gold-thumb::-webkit-slider-thumb { background: var(--gold); box-shadow: 0 2px 6px rgba(184,150,12,0.4); }
+.slider-row input[type="range"]::-moz-range-thumb {
+  width: 22px; height: 22px; border-radius: 50%; background: var(--accent); cursor: pointer; border: none;
+}
+.slider-row .slider-value {
+  font-family: 'Fraunces', serif; font-weight: 700; font-size: 1.1rem; min-width: 70px; text-align: right;
+}
+
+/* ===== BUILDING VIS ===== */
+.building-vis { display: flex; gap: 4px; flex-wrap: wrap; margin: 20px 0; justify-content: center; }
+.unit-block { width: 32px; height: 32px; border-radius: 4px; transition: all 0.3s ease; }
+.unit-block.market { background: var(--border); }
+.unit-block.affordable { background: var(--green); }
+.unit-block.pil { background: var(--purple); }
+
+.building-legend {
+  display: flex; gap: 20px; justify-content: center; margin-top: 12px;
+  font-size: 0.85rem; color: var(--muted); flex-wrap: wrap;
+}
+.legend-dot {
+  width: 12px; height: 12px; border-radius: 3px; display: inline-block;
+  vertical-align: middle; margin-right: 6px;
+}
+
+/* ===== BARS ===== */
+.comparison-container { margin: 20px 0; }
+.comparison-row { margin-bottom: 16px; }
+.comparison-label { font-size: 0.85rem; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
+.bar-track { background: #eee8de; border-radius: 6px; height: 36px; position: relative; overflow: hidden; }
+.bar-fill {
+  height: 100%; border-radius: 6px;
+  transition: width 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  display: flex; align-items: center; padding: 0 12px;
+  font-size: 0.85rem; font-weight: 600; color: white; white-space: nowrap;
+}
+.bar-fill.green { background: var(--green); }
+.bar-fill.blue { background: var(--blue); }
+.bar-fill.purple { background: var(--purple); }
+.bar-fill.gold { background: var(--gold); }
+
+/* ===== MONEY / TIMELINE ===== */
+.money-counter { text-align: center; padding: 20px; }
+.money-amount { font-family: 'Fraunces', serif; font-size: 2.8rem; font-weight: 900; transition: color 0.3s; }
+.money-label { font-size: 0.9rem; color: var(--muted); margin-top: 4px; }
+
+.timeline-vis {
+  position: relative; height: 80px; margin: 20px 0; background: #eee8de; border-radius: 8px; overflow: hidden;
+}
+.timeline-fill {
+  position: absolute; top: 0; left: 0; height: 100%; border-radius: 8px;
+  transition: width 0.6s ease; display: flex; align-items: center; justify-content: center;
+  font-weight: 600; color: white; font-size: 0.9rem;
+}
+.timeline-markers {
+  display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--muted); margin-top: 6px;
+}
+.fee-line {
+  position: absolute; top: 0; height: 100%; width: 2px; background: var(--accent);
+  z-index: 2; transition: left 0.3s;
+}
+.fee-line-label {
+  position: absolute; top: -22px; font-size: 0.7rem; font-weight: 600; color: var(--accent);
+  white-space: nowrap; transform: translateX(-50%);
+}
+
+/* ===== RESULT BOX ===== */
+.result-box {
+  border-radius: 10px; padding: 24px; margin: 20px 0; text-align: center;
+}
+.result-box .big-num { font-family: 'Fraunces', serif; font-size: 3rem; font-weight: 900; line-height: 1; }
+.result-box .result-label { font-size: 0.95rem; color: var(--muted); margin-top: 6px; }
+
+/* ===== CALLOUT ===== */
+.callout {
+  border-left: 4px solid var(--border); padding: 16px 20px; background: #f5f0e8;
+  border-radius: 0 8px 8px 0; margin: 24px 0; font-size: 0.95rem; color: var(--muted); line-height: 1.7;
+}
+.callout.green { border-left-color: var(--green); background: var(--green-light); color: var(--text); }
+.callout.purple { border-left-color: var(--purple); background: var(--purple-light); color: var(--text); }
+
+/* ===== CHOICE BUTTONS ===== */
+.choice-toggle {
+  display: flex; gap: 0; margin: 20px 0; border-radius: 8px; overflow: hidden; border: 2px solid var(--border);
+}
+.choice-btn {
+  flex: 1; padding: 14px 20px; font-family: 'Source Sans 3', sans-serif; font-size: 0.95rem;
+  font-weight: 600; border: none; background: var(--card); color: var(--muted);
+  cursor: pointer; transition: all 0.25s; text-align: center;
+}
+.choice-btn:hover { background: #f5f0e8; }
+.choice-btn.active-green { background: var(--green); color: white; }
+.choice-btn.active-purple { background: var(--purple); color: white; }
+.choice-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ===== FUND PROJECTS ===== */
+.fund-project { display: flex; gap: 14px; align-items: flex-start; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.fund-project:last-child { border-bottom: none; }
+.fund-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--purple); margin-top: 8px; flex-shrink: 0; }
+.fund-project-name { font-weight: 600; font-size: 0.95rem; }
+.fund-project-desc { font-size: 0.85rem; color: var(--muted); margin-top: 2px; }
+
+/* ===== COIN VIS ===== */
+.coin-grid { display: flex; gap: 5px; flex-wrap: wrap; justify-content: center; margin: 20px 0; }
+.coin { width: 26px; height: 26px; border-radius: 50%; transition: all 0.3s ease; }
+.coin.kept { background: var(--purple); }
+.coin.lost { background: #e0d8cc; }
+
+/* ===== SIDE-BY-SIDE ===== */
+.side-by-side { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 24px 0; }
+.side-card {
+  background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 20px; text-align: center;
+}
+.side-card h4 { font-family: 'Fraunces', serif; font-size: 1rem; margin-bottom: 8px; }
+.side-card .side-num { font-family: 'Fraunces', serif; font-size: 2rem; font-weight: 900; line-height: 1; }
+.side-card .side-desc { font-size: 0.82rem; color: var(--muted); margin-top: 6px; }
+
+/* ===== SPOT THE GAP ===== */
+.gap-buildings { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0; }
+.gap-building { text-align: center; }
+.gap-building h4 { font-family: 'Fraunces', serif; font-size: 0.95rem; margin-bottom: 10px; }
+.gap-metric { margin: 10px 0; }
+.gap-metric-label { font-size: 0.8rem; color: var(--muted); font-weight: 600; }
+.gap-metric-value { font-family: 'Fraunces', serif; font-size: 1.6rem; font-weight: 900; line-height: 1.2; }
+
+/* ===== SCENARIO CARDS ===== */
+.scenario-card {
+  background: #f9f6f1; border: 1px solid var(--border); border-radius: 10px; padding: 20px;
+  margin: 16px 0;
+}
+.scenario-card h4 { font-family: 'Fraunces', serif; font-size: 1rem; margin-bottom: 8px; }
+.scenario-card p { font-size: 0.92rem; color: var(--muted); margin-bottom: 12px; }
+.scenario-reasoning {
+  display: none; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border);
+  font-size: 0.9rem; line-height: 1.6;
+}
+.scenario-reasoning.show { display: block; animation: popIn 0.3s ease; }
+
+/* ===== FEE GAUGE ===== */
+.fee-gauge {
+  height: 24px; border-radius: 12px; margin: 16px 0; position: relative;
+  background: linear-gradient(to right, var(--green-light) 0%, #faf3d8 50%, var(--accent-light) 100%);
+  border: 1px solid var(--border); overflow: visible;
+}
+.fee-gauge-needle {
+  position: absolute; top: -4px; width: 4px; height: 32px; background: var(--text);
+  border-radius: 2px; transition: left 0.3s; z-index: 2;
+}
+.fee-gauge-labels {
+  display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--muted); margin-top: 4px;
+}
+
+.annotation { font-size: 0.82rem; color: var(--muted); margin-top: 8px; line-height: 1.5; }
+
+.footer {
+  text-align: center; padding: 48px 24px; color: var(--muted); font-size: 0.85rem;
+  border-top: 1px solid var(--border); margin-top: 48px; line-height: 1.7;
+}
+.footer a { color: var(--muted); }
+
+/* ===== BADGE EARNED ===== */
+.badge-earned-section {
+  display: none; text-align: center; padding: 40px 20px; margin: 28px 0;
+  background: linear-gradient(135deg, var(--gold-light), #fff8e1);
+  border: 2px solid var(--gold); border-radius: 16px;
+}
+.badge-earned-section.show { display: block; animation: popIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.badge-icon { font-size: 4rem; margin-bottom: 12px; }
+.badge-title { font-family: 'Fraunces', serif; font-size: 1.6rem; font-weight: 900; color: var(--gold); }
+.badge-subtitle { font-size: 0.95rem; color: var(--muted); margin-top: 8px; }
+
+@media (max-width: 600px) {
+  .slider-row { flex-wrap: wrap; gap: 8px; }
+  .slider-row label { min-width: 100%; }
+  .unit-block { width: 24px; height: 24px; }
+  .money-amount { font-size: 2.2rem; }
+  .side-by-side, .gap-buildings { grid-template-columns: 1fr; }
+  .result-box .big-num { font-size: 2.4rem; }
+  .badge-tracker { bottom: 10px; right: 10px; left: 10px; max-width: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- BADGE TRACKER -->
+<div class="badge-tracker" id="badgeTracker">
+  <div class="badge-dots">
+    <div class="badge-dot" id="bd1" title="Challenge 1">★</div>
+    <div class="badge-dot" id="bd2" title="Challenge 2">★</div>
+    <div class="badge-dot" id="bd3" title="Challenge 3">★</div>
+    <div class="badge-dot" id="bd4" title="Challenge 4">★</div>
+  </div>
+  <div class="badge-label" id="badgeLabel">0 of 4 challenges</div>
+</div>
+
+<div class="hero">
+  <div class="hero-label">An Explorable Explanation</div>
+  <h1>The $50,000 Question</h1>
+  <p class="subtitle">Many cities let developers pay a fee instead of building affordable housing. What does each option actually look like? Let's explore.</p>
+</div>
+
+<div class="container">
+
+<!-- ==================== INTRO ==================== -->
+<section>
+  <p>Here's a policy question cities wrestle with all the time — including Bloomington, Indiana, which <a href="https://www.ipm.org/news/2026-02-11/council-passes-affordable-housing-incentives-asks-for-more" target="_blank">just debated it</a> in February 2026.</p>
+
+  <p>Under Bloomington's <a href="https://bloomington.in.gov/planning/udo" target="_blank">Unified Development Ordinance (UDO)</a>, when developers use certain zoning incentives — like building taller or denser — they're asked to set aside <a href="https://bloomington.in.gov/housing/affordable" target="_blank">15% of their units</a> as <span class="highlight-green">permanently affordable housing</span>. "Permanently" means up to 99 years, and "affordable" means the rent is capped based on the <a href="https://bloomington.in.gov/housing/affordable" target="_blank">Area Median Income (AMI)</a>.</p>
+
+  <p>But the code also gives developers a second option: instead of building those affordable units, they can <strong>pay a fee</strong> into the city's <a href="https://bloomington.in.gov/housing/affordable" target="_blank">Housing Development Fund</a>. This is called a <span class="highlight-purple">"payment in lieu."</span></p>
+
+  <p>Both options have real merits. Let's look at each one — and along the way, you'll encounter <strong style="color:var(--gold);">four challenges ★</strong> to test your understanding.</p>
+</section>
+
+<!-- ==================== THE BUILDING ==================== -->
+<section>
+  <h2>Your Building</h2>
+  <p>Imagine you're developing an apartment complex. Try adjusting the size:</p>
+
+  <div class="interactive">
+    <div class="interactive-label">Try it</div>
+    <h3>How many units are you building?</h3>
+    <div class="slider-row">
+      <label>Total units</label>
+      <input type="range" id="totalUnits" min="30" max="120" value="60" step="5">
+      <span class="slider-value" id="totalUnitsVal">60</span>
+    </div>
+    <div class="building-vis" id="buildingVis"></div>
+    <div class="building-legend">
+      <span><span class="legend-dot" style="background:var(--border)"></span>Market rate</span>
+      <span><span class="legend-dot" style="background:var(--green)"></span>Affordable (<span id="affordCount">9</span> units)</span>
+    </div>
+    <p class="annotation">Each block is one unit. Under the <a href="https://bloomington.in.gov/planning/udo" target="_blank">UDO's affordable housing incentives</a>, 15% must be affordable if you use the incentives.</p>
+  </div>
+
+  <p>Now — which option do you choose for those <span id="affordCount2">9</span> affordable units?</p>
+
+  <div class="interactive">
+    <div class="interactive-label">Choose</div>
+    <h3>Option A or Option B?</h3>
+    <div class="choice-toggle">
+      <button class="choice-btn active-green" id="choiceBuild" onclick="setChoice('build')">🏠 Build the units</button>
+      <button class="choice-btn" id="choicePay" onclick="setChoice('pay')">💰 Pay the fee</button>
+    </div>
+    <div>
+      <div class="building-vis" id="buildingVis2" style="margin-top:16px"></div>
+      <div class="building-legend" id="legend2"></div>
+      <p id="choiceDesc" style="margin-top:14px; font-style:italic; color:var(--muted); font-size:0.95rem;"></p>
+    </div>
+  </div>
+
+  <p>Each path leads somewhere different. Let's trace both.</p>
+</section>
+
+<hr>
+
+<!-- ==================== OPTION A: BUILD ==================== -->
+<section>
+  <h2>Option A: Build the Units</h2>
+  <p>When a developer builds affordable units on-site, those units are <strong>income-restricted</strong> — the rent is capped so that households earning a percentage of the <a href="https://bloomington.in.gov/housing/affordable" target="_blank">Area Median Income</a> can afford to live there. In Bloomington, the AMI for a family is roughly $72,000/year.</p>
+
+  <p>The gap between what a market-rate tenant would pay and what an affordable tenant actually pays — that's the <strong>ongoing subsidy</strong> built into the building itself. Every month, for decades.</p>
+
+  <div class="interactive">
+    <div class="interactive-label">Play with the numbers</div>
+    <h3>The rent gap, every month</h3>
+    <div class="slider-row">
+      <label>Market rent/mo</label>
+      <input type="range" id="marketRent" min="900" max="2200" value="1400" step="50">
+      <span class="slider-value" id="marketRentVal">$1,400</span>
+    </div>
+    <div class="slider-row">
+      <label>Affordable rent/mo</label>
+      <input type="range" id="affordRent" min="500" max="1200" value="850" step="50">
+      <span class="slider-value" id="affordRentVal">$850</span>
+    </div>
+    <div class="comparison-container">
+      <div class="comparison-row">
+        <div class="comparison-label">Market rate rent</div>
+        <div class="bar-track"><div class="bar-fill blue" id="marketBar">$1,400</div></div>
+      </div>
+      <div class="comparison-row">
+        <div class="comparison-label">Affordable rent (capped at AMI)</div>
+        <div class="bar-track"><div class="bar-fill green" id="affordBar">$850</div></div>
+      </div>
+    </div>
+    <div class="result-box" style="background:linear-gradient(135deg,#f0f7f3,#e5f0e8); border:2px solid var(--green);">
+      <div class="big-num" style="color:var(--green)" id="monthlyGap">$550</div>
+      <div class="result-label">saved for a family each month</div>
+    </div>
+    <p class="annotation">These are illustrative numbers. Actual rents vary by unit size, location, and AMI tier.</p>
+  </div>
+
+  <p>That monthly gap adds up. The units are affordable for up to <strong>99 years</strong>. So how much total value does one affordable unit represent over that lifespan?</p>
+
+  <div class="interactive">
+    <div class="interactive-label">Drag to see time pass</div>
+    <h3>Total value of one affordable unit over time</h3>
+    <div class="slider-row">
+      <label>Years</label>
+      <input type="range" id="yearsSlider" min="1" max="99" value="1" step="1">
+      <span class="slider-value" id="yearsVal">1 yr</span>
+    </div>
+    <div class="timeline-vis" style="overflow:visible; position:relative;">
+      <div class="fee-line" id="feeLine"><div class="fee-line-label">$50K fee</div></div>
+      <div class="timeline-fill" id="timelineFill" style="width:1%;background:var(--green);"><span id="timelineLabel">Yr 1</span></div>
+    </div>
+    <div class="timeline-markers"><span>Year 1</span><span>Year 25</span><span>Year 50</span><span>Year 75</span><span>Year 99</span></div>
+    <div class="money-counter">
+      <div class="money-amount" id="totalValue" style="color:var(--green)">$6,600</div>
+      <div class="money-label">total rent savings for one unit over <span id="yearLabel">1 year</span></div>
+    </div>
+    <p class="annotation">The red line marks $50,000 — the payment-in-lieu fee. Watch for the moment the green bar crosses it.</p>
+  </div>
+
+  <p>This is a simplified picture — it doesn't adjust for inflation, maintenance costs, or the complexity of keeping a unit affordable for a century. But it shows the <em>scale</em> of what one affordable unit represents over time.</p>
+
+  <!-- ★ CHALLENGE 1: BREAKEVEN ★ -->
+  <div class="challenge" id="challenge1">
+    <div class="challenge-label">Challenge 1 of 4</div>
+    <h3>Find the Breakeven Year</h3>
+    <p class="challenge-prompt">Using the timeline slider above, find the year where the value of one affordable unit first surpasses the $50,000 payment-in-lieu fee. (At the default rents of $1,400 and $850.)</p>
+    <div class="slider-row">
+      <label>Your answer:</label>
+      <input type="range" id="c1Answer" min="1" max="30" value="1" step="1" class="gold-thumb">
+      <span class="slider-value" id="c1AnswerVal" style="color:var(--gold);">Year 1</span>
+    </div>
+    <button onclick="checkC1()" style="
+      background: var(--gold); color: white; border: none; padding: 10px 24px;
+      border-radius: 6px; font-weight: 600; font-size: 0.95rem; cursor: pointer;
+      font-family: 'Source Sans 3', sans-serif; margin-top: 8px;
+    ">Check</button>
+    <div class="challenge-success" id="c1Success">
+      <span class="success-icon">★</span>
+      <strong>That's it!</strong> At a $550/month rent gap, the unit's cumulative value surpasses $50,000 in about <strong>7–8 years</strong>. That means the fee covers less than a decade of a 99-year commitment. The remaining ~91 years of value are what distinguishes the two options.
+    </div>
+  </div>
+</section>
+
+<hr>
+
+<!-- ==================== OPTION B: PAY ==================== -->
+<section>
+  <h2>Option B: Pay the Fee</h2>
+  <p>The other path. Instead of building affordable units, a developer pays into the city's <a href="https://bloomington.in.gov/housing/affordable" target="_blank">Housing Development Fund</a>.</p>
+
+  <p>As of <a href="https://www.ipm.org/news/2026-02-11/council-passes-affordable-housing-incentives-asks-for-more" target="_blank">Ordinance 2026-01</a> (passed February 2026), that fee is approximately <span class="highlight-purple">$50,000 per unit</span> — <a href="https://bloomington.in.gov/housing/affordable" target="_blank">up from about $20,000</a>. Under the new rules, this option is only available for projects with <strong>more than 30 units</strong>.</p>
+
+  <p>This money doesn't vanish. It goes into a dedicated fund the city uses to support affordable housing <em>elsewhere</em> in the community.</p>
+
+  <div class="interactive">
+    <div class="interactive-label">Where does the money go?</div>
+    <h3>The Housing Development Fund</h3>
+    <p style="font-size:0.95rem; color:var(--muted); margin-bottom:16px;">By end of 2024, the fund held about <strong>$2.5 million</strong> and had distributed roughly <strong>$2.1 million</strong> since 2018. That money has gone to real projects:</p>
+    <div class="fund-project"><div class="fund-dot"></div><div><div class="fund-project-name">SCIHO Switchyard Apartments</div><div class="fund-project-desc">16 affordable units near Switchyard Park, built on city-donated land by a local nonprofit</div></div></div>
+    <div class="fund-project"><div class="fund-dot"></div><div><div class="fund-project-name">Habitat for Humanity of Monroe County</div><div class="fund-project-desc">Support for affordable homeownership construction</div></div></div>
+    <div class="fund-project"><div class="fund-dot"></div><div><div class="fund-project-name">Bloomington Housing Authority renovations</div><div class="fund-project-desc">$215K loan for Rev. Butler &amp; Walnut Woods — part of a $17.7M total renovation preserving 116 units</div></div></div>
+    <div class="fund-project"><div class="fund-dot"></div><div><div class="fund-project-name">Summit Hill CDC, Middle Way House, and others</div><div class="fund-project-desc">Grants to community organizations providing housing and supportive services</div></div></div>
+    <p class="annotation" style="margin-top:14px;">Sources: <a href="https://bsquarebulletin.com/bloomington-plan-commission-splits-on-payment-in-lieu-rule-backs-lower-income-thresholds-for-affordable-units/" target="_blank">B Square Bulletin</a>, <a href="https://bloomington.in.gov/housing/affordable" target="_blank">City of Bloomington</a>. The fund's largest single contribution was $1M from the Evolve student housing development.</p>
+  </div>
+
+  <p>The fund does real work. And because these dollars are <strong>flexible</strong> — they can be combined with federal tax credits, private loans, and other sources — a well-placed grant from the fund can help unlock much larger projects.</p>
+
+  <p>So the question isn't whether the fee is useful. It clearly is. The question is <strong>how the two options compare</strong> — and when each one makes the most sense.</p>
+</section>
+
+<hr>
+
+<!-- ==================== SCENARIOS (WOVEN CHALLENGE) ==================== -->
+<section>
+  <h2>When Does Each Option Fit?</h2>
+  <p>Not every development is the same. Think through these real-ish scenarios and pick the option you think makes the most sense. There's no single "right" answer — the goal is to think through the tradeoffs.</p>
+
+  <!-- ★ CHALLENGE 2: SCENARIOS ★ -->
+  <div class="challenge" id="challenge2">
+    <div class="challenge-label">Challenge 2 of 4</div>
+    <h3>The Right Fit</h3>
+    <p class="challenge-prompt">For each scenario, pick the option you think fits best, then see the considerations.</p>
+
+    <!-- Scenario A -->
+    <div class="scenario-card" id="sc1">
+      <h4>🏗️ Scenario 1: "The Grove" — 80-unit student housing complex</h4>
+      <p>A developer wants to build student apartments near campus using height incentives. Units are studio and 1-bedroom. The tenant population turns over every 1–2 years.</p>
+      <div class="choice-toggle">
+        <button class="choice-btn" id="sc1a" onclick="pickScenario(1,'build')">🏠 Build on-site</button>
+        <button class="choice-btn" id="sc1b" onclick="pickScenario(1,'pay')">💰 Pay the fee</button>
+      </div>
+      <div class="scenario-reasoning" id="sc1r"></div>
+    </div>
+
+    <!-- Scenario B -->
+    <div class="scenario-card" id="sc2">
+      <h4>🏘️ Scenario 2: "Kinser Meadows" — 45-unit family subdivision</h4>
+      <p>A developer is subdividing land on the north side into single-family homes and duplexes, targeting first-time homebuyers. They're using lot-size reduction incentives.</p>
+      <div class="choice-toggle">
+        <button class="choice-btn" id="sc2a" onclick="pickScenario(2,'build')">🏠 Build on-site</button>
+        <button class="choice-btn" id="sc2b" onclick="pickScenario(2,'pay')">💰 Pay the fee</button>
+      </div>
+      <div class="scenario-reasoning" id="sc2r"></div>
+    </div>
+
+    <!-- Scenario C -->
+    <div class="scenario-card" id="sc3">
+      <h4>🏢 Scenario 3: "Union Block" — 35-unit mixed-use downtown</h4>
+      <p>A developer is building apartments above retail space downtown, using height incentives. The building is in a walkable area near transit, groceries, and services.</p>
+      <div class="choice-toggle">
+        <button class="choice-btn" id="sc3a" onclick="pickScenario(3,'build')">🏠 Build on-site</button>
+        <button class="choice-btn" id="sc3b" onclick="pickScenario(3,'pay')">💰 Pay the fee</button>
+      </div>
+      <div class="scenario-reasoning" id="sc3r"></div>
+    </div>
+
+    <div class="challenge-success" id="c2Success">
+      <span class="success-icon">★</span>
+      <strong>Nice work.</strong> The "right" choice depends on context — who the tenants are, where the building is, and whether on-site units would serve the people who need them most. There's no universal answer, which is exactly why this policy debate is hard.
+    </div>
+  </div>
+</section>
+
+<hr>
+
+<!-- ==================== SIDE BY SIDE ==================== -->
+<section>
+  <h2>Putting Them Side by Side</h2>
+  <p>For each affordable unit a developer <em>doesn't</em> build, the city collects $50,000. Here's how that fee stacks up against the long-run value of the unit it replaces:</p>
+
+  <div class="interactive">
+    <div class="interactive-label">The comparison</div>
+    <h3>$50,000 fee vs. one affordable unit (99 years)</h3>
+    <div class="coin-grid" id="coinGrid"></div>
+    <div class="side-by-side">
+      <div class="side-card" style="border-color:var(--purple);">
+        <h4 style="color:var(--purple);">💰 Fee collected</h4>
+        <div class="side-num" style="color:var(--purple);">$50K</div>
+        <div class="side-desc">One-time payment to Housing Development Fund</div>
+      </div>
+      <div class="side-card" style="border-color:var(--green);">
+        <h4 style="color:var(--green);">🏠 Unit value</h4>
+        <div class="side-num" style="color:var(--green);" id="unitValueSide">$653K</div>
+        <div class="side-desc">Cumulative rent savings over 99 years</div>
+      </div>
+    </div>
+    <p class="annotation">Each dot = 1¢ of every dollar of unit value. <span style="color:var(--purple);font-weight:600;">Purple</span> = what the fund collects. <span style="color:var(--muted);">Grey</span> = remainder.</p>
+  </div>
+
+  <p>At these rent assumptions, the fee captures roughly <strong id="centsText">8 cents</strong> on the dollar. (Adjust the rent sliders above to see how this changes.)</p>
+</section>
+
+<hr>
+
+<!-- ==================== SPOT THE GAP ==================== -->
+<section>
+  <h2>Two Buildings, One Choice</h2>
+  <p>Imagine two identical 60-unit apartment buildings approved on the same day. Building A builds its 9 affordable units. Building B pays the fee. Now watch what happens as time passes:</p>
+
+  <!-- ★ CHALLENGE 3: SPOT THE GAP ★ -->
+  <div class="challenge" id="challenge3">
+    <div class="challenge-label">Challenge 3 of 4</div>
+    <h3>Spot the Gap</h3>
+    <p class="challenge-prompt">Drag the slider forward in time. At what year has Building A saved families a cumulative total of more than <strong>$1 million</strong>?</p>
+
+    <div class="slider-row">
+      <label>Years elapsed</label>
+      <input type="range" id="gapYears" min="0" max="99" value="0" step="1" class="gold-thumb">
+      <span class="slider-value" id="gapYearsVal" style="color:var(--gold);">Year 0</span>
+    </div>
+
+    <div class="gap-buildings">
+      <div class="gap-building" style="border-right: 1px solid var(--border); padding-right: 20px;">
+        <h4 style="color:var(--green);">🏠 Building A<br><span style="font-weight:400;font-size:0.82rem;">Built the units</span></h4>
+        <div class="gap-metric">
+          <div class="gap-metric-label">Families living affordably</div>
+          <div class="gap-metric-value" style="color:var(--green);" id="gapFamiliesA">0</div>
+        </div>
+        <div class="gap-metric">
+          <div class="gap-metric-label">Cumulative rent savings</div>
+          <div class="gap-metric-value" style="color:var(--green);" id="gapSavingsA">$0</div>
+        </div>
+      </div>
+      <div class="gap-building">
+        <h4 style="color:var(--purple);">💰 Building B<br><span style="font-weight:400;font-size:0.82rem;">Paid the fee</span></h4>
+        <div class="gap-metric">
+          <div class="gap-metric-label">Families in on-site affordable units</div>
+          <div class="gap-metric-value" style="color:var(--purple);" id="gapFamiliesB">0</div>
+        </div>
+        <div class="gap-metric">
+          <div class="gap-metric-label">Fee paid to housing fund</div>
+          <div class="gap-metric-value" style="color:var(--purple);" id="gapFundB">$450K</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="comparison-container" style="margin-top:16px;">
+      <div class="comparison-row">
+        <div class="comparison-label">Building A: Cumulative savings</div>
+        <div class="bar-track"><div class="bar-fill green" id="gapBarA" style="width:0%"><span id="gapBarALabel"></span></div></div>
+      </div>
+      <div class="comparison-row">
+        <div class="comparison-label">Building B: Fund contribution (one-time, fixed)</div>
+        <div class="bar-track"><div class="bar-fill purple" id="gapBarB" style="width:5%"><span id="gapBarBLabel">$450K</span></div></div>
+      </div>
+    </div>
+
+    <div class="challenge-success" id="c3Success">
+      <span class="success-icon">★</span>
+      <strong>Found it!</strong> With 9 affordable units saving $550/month each, Building A crosses $1 million in cumulative family savings around <strong>year 17</strong>. By year 99, that grows to roughly $5.9M. Building B's $450K fund contribution stays fixed — though it may have been leveraged into other projects along the way.
+    </div>
+  </div>
+</section>
+
+<hr>
+
+<!-- ==================== TRADEOFFS ==================== -->
+<section>
+  <h2>The Tradeoffs</h2>
+  <p>Both options have genuine strengths. Understanding them matters more than declaring a winner.</p>
+
+  <div class="callout green">
+    <strong>The case for building units on-site:</strong> They create mixed-income communities. They're guaranteed for decades. And their cumulative value to families is large. Bloomington's <a href="https://bsquarebulletin.com/2019/11/25/udo-update-how-payment-in-lieu-of-building-affordable-housing-could-still-be-in-the-mix/" target="_blank">original 2019 UDO prioritized on-site units</a> first, off-site units second, and payment in lieu as a last resort.
+  </div>
+
+  <div class="callout purple">
+    <strong>The case for the fee:</strong> Not every project fits on-site affordable housing. The fee lets the city direct money toward purpose-built affordable housing, managed by specialists like <a href="https://sciho.wordpress.com/tag/affordable-housing-development/" target="_blank">SCIHO</a> and <a href="https://bloomington.in.gov/housing/loans" target="_blank">Habitat</a>. And flexible fund dollars can be <strong>leveraged</strong> — a $215K loan helped unlock a $17.7M renovation.
+  </div>
+
+  <p>There's also an important <strong>practical consideration</strong>: if a fee is set low enough that developers almost always choose it, the affordable units never get built on-site — and the fund doesn't collect enough to replace them. If it's set too high, developers avoid the incentives entirely.</p>
+</section>
+
+<hr>
+
+<!-- ==================== SET THE FEE ==================== -->
+<section>
+  <h2>So… What Should the Fee Be?</h2>
+  <p>This is the question at the heart of the debate. Try playing city council — set the fee yourself and see how it changes the math.</p>
+
+  <!-- ★ CHALLENGE 4: SET THE FEE ★ -->
+  <div class="challenge" id="challenge4">
+    <div class="challenge-label">Challenge 4 of 4</div>
+    <h3>Set the Fee</h3>
+    <p class="challenge-prompt">Drag the slider to set the payment-in-lieu fee per unit. Watch how it changes the cents-on-the-dollar ratio, and think about at what point a developer might just build the units instead.</p>
+
+    <div class="slider-row">
+      <label>Fee per unit</label>
+      <input type="range" id="feeSlider" min="10000" max="400000" value="50000" step="5000" class="gold-thumb">
+      <span class="slider-value" id="feeSliderVal" style="color:var(--gold);">$50K</span>
+    </div>
+
+    <div class="side-by-side" style="margin:16px 0;">
+      <div class="side-card" style="border-color:var(--gold);">
+        <h4>Cents on the dollar</h4>
+        <div class="side-num" style="color:var(--gold);" id="feeRatio">8¢</div>
+        <div class="side-desc">of the 99-year unit value captured</div>
+      </div>
+      <div class="side-card" style="border-color:var(--gold);">
+        <h4>Fund revenue (9 units)</h4>
+        <div class="side-num" style="color:var(--gold);" id="feeFundTotal">$450K</div>
+        <div class="side-desc">one-time payment to housing fund</div>
+      </div>
+    </div>
+
+    <!-- Developer decision gauge -->
+    <div style="margin: 20px 0;">
+      <div class="comparison-label">Developer incentive to build vs. pay</div>
+      <div class="fee-gauge">
+        <div class="fee-gauge-needle" id="feeNeedle" style="left:12%"></div>
+      </div>
+      <div class="fee-gauge-labels">
+        <span>Easy to pay →<br>developers choose fee</span>
+        <span style="text-align:center;">Toss-up</span>
+        <span style="text-align:right;">← Cheaper to build<br>developers build units</span>
+      </div>
+    </div>
+
+    <p class="annotation" id="feeAnnotation" style="margin-top:16px;">At $50,000 per unit, the fee is significantly cheaper than the cost of providing an affordable unit over its lifespan. Most developers would choose to pay.</p>
+
+    <div style="margin-top:20px;">
+      <button onclick="checkC4()" style="
+        background: var(--gold); color: white; border: none; padding: 10px 24px;
+        border-radius: 6px; font-weight: 600; font-size: 0.95rem; cursor: pointer;
+        font-family: 'Source Sans 3', sans-serif;
+      ">I've found a fee I think works — why?</button>
+      <div style="margin-top:10px; display:none;" id="c4Explain">
+        <label style="font-size:0.9rem; color:var(--muted); font-weight:600;">Briefly, what drove your choice?</label>
+        <textarea id="c4Text" style="
+          width:100%; margin-top:6px; padding:10px; border:1px solid var(--border); border-radius:6px;
+          font-family:'Source Sans 3',sans-serif; font-size:0.92rem; resize:vertical; min-height:60px;
+        " placeholder="e.g., 'I set it at $200K because…'"></textarea>
+        <button onclick="submitC4()" style="
+          background: var(--gold); color: white; border: none; padding: 8px 20px;
+          border-radius: 6px; font-weight: 600; font-size: 0.9rem; cursor: pointer;
+          font-family: 'Source Sans 3', sans-serif; margin-top: 8px;
+        ">Submit</button>
+      </div>
+    </div>
+
+    <div class="challenge-success" id="c4Success">
+      <span class="success-icon">★</span>
+      <strong>Great thinking.</strong> There's no single "correct" fee — it depends on what you're optimizing for. A lower fee generates less revenue but keeps the incentive attractive. A higher fee better reflects the housing value but may discourage developers from using the incentives at all. The sweet spot is where the fee is high enough to take seriously, but the incentives are still worth using. Bloomington's council landed on ~$50K as a compromise, up from $20K — but several members argued it should be higher.
+    </div>
+  </div>
+</section>
+
+<hr>
+
+<!-- ==================== REAL QUESTIONS ==================== -->
+<section>
+  <h2>The Bigger Picture</h2>
+
+  <p>Bloomington's council <a href="https://www.ipm.org/news/2026-02-11/council-passes-affordable-housing-incentives-asks-for-more" target="_blank">passed Ordinance 2026-01</a> on a 6-2 vote. The two "no" votes came from members who felt the whole framework needs bigger structural reform. Here are the questions the debate raised:</p>
+
+  <p><strong>Is the fee calibrated correctly?</strong> At $50,000 — up from $20,000 — is it high enough to reflect the real cost of equivalent affordable housing? Or does it make the fee path so cheap that developers always choose it?</p>
+
+  <p><strong>When should each option be available?</strong> Under the new rules, payment in lieu is only for projects over 30 units. Should that threshold be different?</p>
+
+  <p><strong>Are there bigger levers?</strong> Several council members pointed out that no amount of incentive tweaking substitutes for structural changes — like <a href="https://www.idsnews.com/article/2026/01/bloomington-city-council-meeting-affordable-housing" target="_blank">reducing minimum lot sizes</a>. As one member put it: the city needs an <em>"affordability feast,"</em> and this felt like <em>"putting a pea on a plate."</em></p>
+
+  <div class="callout">
+    This isn't just a Bloomington question. Cities across the country use payment-in-lieu systems, and the math looks similar almost everywhere. If you live in a city with inclusionary zoning, it's worth asking: what is the fee, how does it compare to the housing it replaces, and where does the money go?
+  </div>
+</section>
+
+<!-- ==================== BADGE ==================== -->
+<div class="badge-earned-section" id="badgeEarned">
+  <div class="badge-icon">🏆</div>
+  <div class="badge-title">Housing Policy Explorer</div>
+  <div class="badge-subtitle">You completed all four challenges. You now understand how payment-in-lieu systems work, when each option fits, and why the fee amount matters. Nice work.</div>
+</div>
+
+<div class="footer">
+  <p>Built for understanding, not advocacy.<br>
+  Based on the Bloomington Common Council discussion of <a href="https://bloomington.in.gov/onboard/meetingFiles/15659/download" target="_blank">Ordinance 2026-01</a>, February 4, 2026.<br><br>
+  Sources: <a href="https://bloomington.in.gov/housing/affordable" target="_blank">City of Bloomington – Affordable Housing</a> · <a href="https://bloomington.in.gov/planning/udo" target="_blank">UDO</a> · <a href="https://bsquarebulletin.com/bloomington-plan-commission-splits-on-payment-in-lieu-rule-backs-lower-income-thresholds-for-affordable-units/" target="_blank">B Square (Nov 2025)</a> · <a href="https://bsquarebulletin.com/bloomington-plan-commission-mulls-payment-in-lieu-affordable-housing-incentives/" target="_blank">B Square (Oct 2025)</a> · <a href="https://www.ipm.org/news/2026-02-11/council-passes-affordable-housing-incentives-asks-for-more" target="_blank">Indiana Public Media</a> · <a href="https://www.idsnews.com/article/2026/01/bloomington-city-council-meeting-affordable-housing" target="_blank">Indiana Daily Student</a><br><br>
+  <span style="font-size:0.8rem;">Rent figures and calculations are illustrative estimates. The 99-year calculation is nominal (not inflation-adjusted) and does not discount future value.</span></p>
+</div>
+
+</div>
+
+<script>
+// ==============================
+// STATE
+// ==============================
+let state = {
+  totalUnits: 60,
+  choice: 'build',
+  marketRent: 1400,
+  affordRent: 850,
+  years: 1,
+};
+
+let badges = { c1: false, c2: false, c3: false, c4: false };
+let scenariosDone = { 1: false, 2: false, 3: false };
+
+function getAffordCount() { return Math.ceil(state.totalUnits * 0.15); }
+function getGap() { return Math.max(0, state.marketRent - state.affordRent); }
+function fmtMoney(v) {
+  if (v >= 1000000) return '$' + (v / 1000000).toFixed(1) + 'M';
+  if (v >= 1000) return '$' + Math.round(v / 1000) + 'K';
+  return '$' + v.toLocaleString();
+}
+
+// ==============================
+// BADGE TRACKER
+// ==============================
+function updateBadges() {
+  let count = 0;
+  ['c1','c2','c3','c4'].forEach((k, i) => {
+    const dot = document.getElementById('bd' + (i + 1));
+    if (badges[k]) { dot.classList.add('earned'); count++; }
+  });
+  const label = document.getElementById('badgeLabel');
+  const tracker = document.getElementById('badgeTracker');
+  if (count === 4) {
+    label.textContent = 'All challenges complete!';
+    tracker.classList.add('complete');
+    document.getElementById('badgeEarned').classList.add('show');
+  } else {
+    label.textContent = count + ' of 4 challenges';
+  }
+}
+
+// ==============================
+// BUILDING VIS
+// ==============================
+function renderBuilding(id, total, aff, mode) {
+  const c = document.getElementById(id);
+  c.innerHTML = '';
+  const m = total - aff;
+  for (let i = 0; i < total; i++) {
+    const d = document.createElement('div');
+    d.className = 'unit-block ' + (i < m ? 'market' : (mode === 'pay' ? 'pil' : 'affordable'));
+    c.appendChild(d);
+  }
+}
+
+// ==============================
+// COINS
+// ==============================
+function renderCoins() {
+  const c = document.getElementById('coinGrid');
+  c.innerHTML = '';
+  const v99 = getGap() * 12 * 99;
+  const cents = Math.max(1, Math.round((50000 / v99) * 100));
+  for (let i = 0; i < 100; i++) {
+    const d = document.createElement('div');
+    d.className = 'coin ' + (i < cents ? 'kept' : 'lost');
+    c.appendChild(d);
+  }
+  document.getElementById('centsText').textContent = cents + ' cent' + (cents !== 1 ? 's' : '');
+}
+
+// ==============================
+// MAIN UPDATE
+// ==============================
+function updateAll() {
+  const total = state.totalUnits;
+  const aff = getAffordCount();
+  const gap = getGap();
+
+  renderBuilding('buildingVis', total, aff, 'build');
+  document.getElementById('affordCount').textContent = aff;
+  document.getElementById('affordCount2').textContent = aff;
+
+  renderBuilding('buildingVis2', total, aff, state.choice);
+  const l2 = document.getElementById('legend2');
+  const desc = document.getElementById('choiceDesc');
+  if (state.choice === 'build') {
+    l2.innerHTML = '<span><span class="legend-dot" style="background:var(--border)"></span>Market rate</span><span><span class="legend-dot" style="background:var(--green)"></span>Affordable</span>';
+    desc.textContent = 'You build ' + aff + ' affordable units on-site. Families move in alongside market-rate tenants. The units stay affordable for up to 99 years.';
+  } else {
+    l2.innerHTML = '<span><span class="legend-dot" style="background:var(--border)"></span>Market rate</span><span><span class="legend-dot" style="background:var(--purple)"></span>Fee paid instead</span>';
+    desc.textContent = 'You pay ' + fmtMoney(aff * 50000) + ' into the Housing Development Fund. Those ' + aff + ' units become market-rate. The fund uses the money for affordable housing elsewhere.';
+  }
+
+  // Rent bars
+  const mx = 2200;
+  document.getElementById('marketBar').style.width = (state.marketRent / mx * 100) + '%';
+  document.getElementById('marketBar').textContent = '$' + state.marketRent.toLocaleString();
+  document.getElementById('affordBar').style.width = (state.affordRent / mx * 100) + '%';
+  document.getElementById('affordBar').textContent = '$' + state.affordRent.toLocaleString();
+  document.getElementById('monthlyGap').textContent = '$' + gap.toLocaleString();
+
+  // Timeline
+  const y = state.years;
+  const tv = gap * 12 * y;
+  const pct = (y / 99) * 100;
+  document.getElementById('timelineFill').style.width = Math.max(pct, 1) + '%';
+  document.getElementById('timelineLabel').textContent = y <= 60 ? 'Yr ' + y : '';
+  document.getElementById('yearsVal').textContent = y + ' yr' + (y > 1 ? 's' : '');
+  document.getElementById('yearLabel').textContent = y + ' year' + (y > 1 ? 's' : '');
+
+  // Fee marker line on timeline
+  const breakEvenVal = 50000;
+  const val99 = gap * 12 * 99;
+  const feePct = val99 > 0 ? Math.min((breakEvenVal / val99) * 100, 100) : 100;
+  document.getElementById('feeLine').style.left = feePct + '%';
+
+  const mel = document.getElementById('totalValue');
+  mel.textContent = fmtMoney(tv);
+  mel.style.color = tv > 50000 ? 'var(--accent)' : 'var(--green)';
+
+  // Coins & side
+  const v99 = gap * 12 * 99;
+  document.getElementById('unitValueSide').textContent = fmtMoney(v99);
+  renderCoins();
+}
+
+// ==============================
+// CHOICE TOGGLE
+// ==============================
+function setChoice(c) {
+  state.choice = c;
+  document.getElementById('choiceBuild').className = 'choice-btn' + (c === 'build' ? ' active-green' : '');
+  document.getElementById('choicePay').className = 'choice-btn' + (c === 'pay' ? ' active-purple' : '');
+  updateAll();
+}
+
+// ==============================
+// CHALLENGE 1: BREAKEVEN
+// ==============================
+function checkC1() {
+  const ans = parseInt(document.getElementById('c1Answer').value);
+  const gap = getGap();
+  const actual = Math.ceil(50000 / (gap * 12));
+  if (Math.abs(ans - actual) <= 1) {
+    document.getElementById('c1Success').classList.add('show');
+    if (!badges.c1) { badges.c1 = true; updateBadges(); }
+  } else {
+    const el = document.getElementById('c1Success');
+    el.innerHTML = '<span class="success-icon">🔍</span> Not quite — try using the timeline slider above to find where the green value crosses $50,000, then come back. (Hint: at $' + gap + '/month, it\'s around year ' + actual + '.)';
+    el.classList.add('show');
+    el.style.background = '#fef3e8';
+    el.style.borderColor = 'var(--accent)';
+  }
+}
+
+// ==============================
+// CHALLENGE 2: SCENARIOS
+// ==============================
+const scenarioData = {
+  1: {
+    build: '<strong>Build on-site:</strong> A valid choice — affordable housing for students exists. But student housing has high turnover and may not serve the families the affordability incentive is designed for. The units would be income-restricted studios near campus.',
+    pay: '<strong>Pay the fee:</strong> Many argue this is the better fit here. Student-oriented developments serve a transient population. The fee sends money to the Housing Development Fund, where it can support family-oriented affordable housing in more appropriate locations. This was part of the reasoning behind Bloomington\'s original UDO, which specifically addressed student housing projects.',
+    either: 'This is the kind of scenario where the payment-in-lieu option arguably makes the most sense — the on-site units might not reach the people who need affordable housing most.'
+  },
+  2: {
+    build: '<strong>Build on-site:</strong> This is arguably the strongest case for on-site units. Owner-occupied, family-oriented, in a new subdivision — exactly the mixed-income community the policy envisions. The affordable homes sit alongside market-rate ones. Families build equity and put down roots.',
+    pay: '<strong>Pay the fee:</strong> A defensible choice if you believe the fund can stretch further — e.g., if Habitat could build more units per dollar on a different site. But you lose the integration of affordable homes <em>within</em> the neighborhood itself.',
+    either: 'Most housing policy experts would lean toward building on-site here. This is the scenario where mixed-income integration works best.'
+  },
+  3: {
+    build: '<strong>Build on-site:</strong> Strong case. Downtown locations near transit and services are exactly where affordable units provide the most benefit — residents can access jobs, groceries, and healthcare without a car. These are high-value locations that the market rarely makes affordable on its own.',
+    pay: '<strong>Pay the fee:</strong> You could argue the fund money goes further elsewhere. But downtown affordable units are uniquely valuable precisely because of their location — the fund would have to acquire similarly located land to match that benefit.',
+    either: 'Access-rich locations are where on-site affordable units arguably matter most. Paying the fee trades away a high-value placement.'
+  }
+};
+
+function pickScenario(n, choice) {
+  const data = scenarioData[n];
+  const el = document.getElementById('sc' + n + 'r');
+  el.innerHTML = '<p>' + data[choice] + '</p><p style="margin-top:8px;font-style:italic;color:var(--muted);">' + data.either + '</p>';
+  el.classList.add('show');
+
+  document.getElementById('sc' + n + 'a').className = 'choice-btn' + (choice === 'build' ? ' active-green' : '');
+  document.getElementById('sc' + n + 'b').className = 'choice-btn' + (choice === 'pay' ? ' active-purple' : '');
+
+  scenariosDone[n] = true;
+  if (scenariosDone[1] && scenariosDone[2] && scenariosDone[3]) {
+    document.getElementById('c2Success').classList.add('show');
+    if (!badges.c2) { badges.c2 = true; updateBadges(); }
+  }
+}
+
+// ==============================
+// CHALLENGE 3: SPOT THE GAP
+// ==============================
+function updateGap() {
+  const y = parseInt(document.getElementById('gapYears').value);
+  const gap = getGap();
+  const aff = 9; // fixed for this challenge
+  const savings = gap * 12 * y * aff;
+  const fund = aff * 50000;
+
+  document.getElementById('gapYearsVal').textContent = 'Year ' + y;
+  document.getElementById('gapFamiliesA').textContent = y > 0 ? aff : '0';
+  document.getElementById('gapSavingsA').textContent = y > 0 ? fmtMoney(savings) : '$0';
+  document.getElementById('gapFamiliesB').textContent = '0';
+  document.getElementById('gapFundB').textContent = fmtMoney(fund);
+
+  // Bars — scale to the 99-year max
+  const max99 = gap * 12 * 99 * aff;
+  const aPct = max99 > 0 ? Math.max((savings / max99) * 90, y > 0 ? 2 : 0) : 0;
+  const bPct = max99 > 0 ? Math.max((fund / max99) * 90, 3) : 3;
+  document.getElementById('gapBarA').style.width = aPct + '%';
+  document.getElementById('gapBarALabel').textContent = y > 0 ? fmtMoney(savings) : '';
+  document.getElementById('gapBarB').style.width = bPct + '%';
+  document.getElementById('gapBarBLabel').textContent = fmtMoney(fund);
+
+  // Check for $1M milestone
+  if (savings >= 1000000 && !badges.c3) {
+    document.getElementById('c3Success').classList.add('show');
+    badges.c3 = true;
+    updateBadges();
+  }
+}
+
+// ==============================
+// CHALLENGE 4: SET THE FEE
+// ==============================
+function updateFee() {
+  const fee = parseInt(document.getElementById('feeSlider').value);
+  const gap = getGap();
+  const v99 = gap * 12 * 99;
+  const aff = 9;
+  const cents = v99 > 0 ? Math.max(1, Math.round((fee / v99) * 100)) : 0;
+  const fundTotal = fee * aff;
+
+  document.getElementById('feeSliderVal').textContent = fmtMoney(fee);
+  document.getElementById('feeRatio').textContent = cents + '¢';
+  document.getElementById('feeFundTotal').textContent = fmtMoney(fundTotal);
+
+  // Developer decision gauge: rough model
+  // At $50K, very easy to pay. At ~$200K+, starts to approach construction cost.
+  // Model: needle from 0% (easy to pay) to 100% (cheaper to build)
+  // Assume "breakeven" around $250K (rough cost of building one affordable unit)
+  const buildCost = 250000;
+  const needlePct = Math.min(Math.max((fee / buildCost) * 100, 2), 98);
+  document.getElementById('feeNeedle').style.left = needlePct + '%';
+
+  const ann = document.getElementById('feeAnnotation');
+  if (fee < 80000) {
+    ann.textContent = 'At ' + fmtMoney(fee) + ' per unit, the fee is well below the cost of building an affordable unit. Most developers would choose to pay.';
+  } else if (fee < 180000) {
+    ann.textContent = 'At ' + fmtMoney(fee) + ' per unit, the fee is starting to get more substantial. Some developers might consider building instead.';
+  } else if (fee < 280000) {
+    ann.textContent = 'At ' + fmtMoney(fee) + ' per unit, the fee is approaching the construction cost of an affordable unit. Developers might genuinely weigh both options.';
+  } else {
+    ann.textContent = 'At ' + fmtMoney(fee) + ' per unit, it may be cheaper to just build the affordable units. The fee effectively becomes a mandate to build.';
+  }
+}
+
+function checkC4() {
+  document.getElementById('c4Explain').style.display = 'block';
+}
+
+function submitC4() {
+  const text = document.getElementById('c4Text').value.trim();
+  if (text.length > 5) {
+    document.getElementById('c4Success').classList.add('show');
+    if (!badges.c4) { badges.c4 = true; updateBadges(); }
+  }
+}
+
+// ==============================
+// LISTENERS
+// ==============================
+document.getElementById('totalUnits').addEventListener('input', function() {
+  state.totalUnits = parseInt(this.value);
+  document.getElementById('totalUnitsVal').textContent = this.value;
+  updateAll();
+});
+
+document.getElementById('marketRent').addEventListener('input', function() {
+  state.marketRent = parseInt(this.value);
+  document.getElementById('marketRentVal').textContent = '$' + this.value;
+  if (state.affordRent >= state.marketRent) {
+    state.affordRent = state.marketRent - 50;
+    document.getElementById('affordRent').value = state.affordRent;
+    document.getElementById('affordRentVal').textContent = '$' + state.affordRent;
+  }
+  updateAll(); updateFee();
+});
+
+document.getElementById('affordRent').addEventListener('input', function() {
+  state.affordRent = parseInt(this.value);
+  document.getElementById('affordRentVal').textContent = '$' + this.value;
+  if (state.affordRent >= state.marketRent) {
+    state.affordRent = state.marketRent - 50;
+    this.value = state.affordRent;
+    document.getElementById('affordRentVal').textContent = '$' + state.affordRent;
+  }
+  updateAll(); updateFee();
+});
+
+document.getElementById('yearsSlider').addEventListener('input', function() {
+  state.years = parseInt(this.value);
+  updateAll();
+});
+
+document.getElementById('c1Answer').addEventListener('input', function() {
+  document.getElementById('c1AnswerVal').textContent = 'Year ' + this.value;
+});
+
+document.getElementById('gapYears').addEventListener('input', updateGap);
+document.getElementById('feeSlider').addEventListener('input', updateFee);
+
+// ==============================
+// INIT
+// ==============================
+updateAll();
+updateGap();
+updateFee();
+updateBadges();
+</script>
+
+</body>
+</html>

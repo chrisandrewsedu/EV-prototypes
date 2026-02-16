@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Home, ArrowLeft, Clock } from 'lucide-react';
+import { Home, ArrowLeft, Clock, DollarSign } from 'lucide-react';
 
 interface BadgeModule {
   id: string;
@@ -10,6 +10,7 @@ interface BadgeModule {
   icon: typeof Home;
   estimatedTime?: string;
   path?: string;
+  href?: string;
 }
 
 const BADGE_MODULES: BadgeModule[] = [
@@ -23,7 +24,16 @@ const BADGE_MODULES: BadgeModule[] = [
     estimatedTime: '~25 min',
     path: '/housing-homelessness',
   },
-  // Future badge modules can be added here
+  {
+    id: 'payment-in-lieu',
+    title: 'The $50,000 Question',
+    location: 'Bloomington, Indiana',
+    description: 'Explore how payment-in-lieu policies work — when developers pay a fee instead of building affordable housing.',
+    status: 'available',
+    icon: DollarSign,
+    estimatedTime: '~15 min',
+    href: `${import.meta.env.BASE_URL}payment-in-lieu.html`,
+  },
 ];
 
 export function BadgeHub() {
@@ -54,7 +64,7 @@ export function BadgeHub() {
       </div>
 
       {/* Empty state for when more modules will be added */}
-      {BADGE_MODULES.length === 1 && (
+      {BADGE_MODULES.length <= 2 && (
         <div className="text-center py-8 text-gray-500">
           <p>More learning modules coming soon!</p>
         </div>
@@ -121,6 +131,20 @@ function BadgeCard({ module }: { module: BadgeModule }) {
       </div>
     </>
   );
+
+  if (isAvailable && module.href) {
+    return (
+      <a
+        href={module.href}
+        className={`
+          group relative overflow-hidden rounded-xl border-2 transition-all duration-300
+          border-ev-light-blue bg-white hover:border-ev-muted-blue hover:shadow-lg hover:-translate-y-1
+        `}
+      >
+        {CardContent}
+      </a>
+    );
+  }
 
   if (isAvailable && module.path) {
     return (
